@@ -1,0 +1,51 @@
+FOLCLOREVANIA v2.5 — RELATÓRIO DE TESTE
+
+AMBIENTE
+- Chromium headless controlado via DevTools Protocol
+- resolução lógica do jogo: 1600x900
+- viewport de teste: 1600x761
+- resultado do aspect ratio: canvas exibido em 1352.875x760.984, preservando 16:9
+
+GAMEPLAY
+PASSOU - mover para a direita por input
+PASSOU - pulo por input
+PASSOU - ataque durante o pulo
+PASSOU - retorno para estado jump após ataque no ar
+PASSOU - morte ao cair abaixo da arena
+PASSOU - feedback de dano
+PASSOU - aviso de porta bloqueada
+
+REGIÕES
+PASSOU - Vila Abandonada
+PASSOU - Floresta Redemoinho
+PASSOU - Campo das Chamas
+PASSOU - Raízes Enganadoras
+PASSOU - Mata Viva
+PASSOU - Templo Ancestral
+PASSOU - Pântano do Boitatá
+PASSOU - Covil da Cuca
+
+CHEFES
+PASSOU - Saci
+PASSOU - Mula sem Cabeça
+PASSOU - Curupira
+PASSOU - Caipora
+PASSOU - Entidade Ancestral
+PASSOU - Boitatá
+PASSOU - Cuca
+
+STREAMING NAS TRANSIÇÕES PARA FRENTE
+0 -> 1: [0,1,2]
+1 -> 2: [1,2,3]
+2 -> 3: [2,3,4]
+3 -> 4: [3,4,5]
+4 -> 5: [4,5,6]
+5 -> 6: [5,6,7]
+6 -> 7: [6,7]
+
+PROGRESSÃO
+PASSOU - Saci libera Pulo Duplo
+PASSOU - Mula libera Investida
+PASSOU - Curupira libera Especial
+PASSOU - Caipora, Ancestral e Boitatá registram derrota
+PASSOU - Cuca registra derrota e abre tela final

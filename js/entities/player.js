@@ -81,6 +81,7 @@ const Player = {
     this.state = 'hurt';
     Particles.playerHit(this.x, this.y);
     if (typeof triggerScreenShake === 'function') triggerScreenShake(5, 0.16);
+    if (typeof GameState !== 'undefined') GameState.damageFlash = 0.18;
   },
 
   setHit(ox, oy, w, h) {
@@ -250,7 +251,7 @@ const Player = {
     }
     if (this.knockbackTimer > 0) {
       this.knockbackTimer -= dt;
-      if (this.knockbackTimer <= 0) { this.knockbackTimer = 0; if (this.state === 'hurt') this.state = 'idle'; }
+      if (this.knockbackTimer <= 0) { this.knockbackTimer = 0; if (this.state === 'hurt') this.state = this.onGround ? 'idle' : 'jump'; }
     }
     if (this.dashTimer > 0) {
       this.dashTimer -= dt;
@@ -261,7 +262,7 @@ const Player = {
     }
     if (this.attackTimer > 0) {
       this.attackTimer -= dt;
-      if (this.attackTimer <= 0) { this.clearHit(); if (this.state === 'attack') this.state = 'idle'; }
+      if (this.attackTimer <= 0) { this.clearHit(); if (this.state === 'attack') this.state = this.onGround ? 'idle' : 'jump'; }
     }
     if (this.chargeTimer > 0) {
       this.chargeTimer -= dt;
@@ -274,7 +275,7 @@ const Player = {
       this.specialTimer -= dt;
       if (this.specialTimer <= 0) {
         this.specialTimer = 0; this.clearHit();
-        if (this.state === 'special') this.state = 'idle';
+        if (this.state === 'special') this.state = this.onGround ? 'idle' : 'jump';
       }
     }
 
@@ -316,6 +317,18 @@ const Player = {
 
     ctx.save();
     if(this.invincible && st!=='dash' && st!=='charge') ctx.globalAlpha=(Math.floor(Date.now()/75)%2===0)?.38:1;
+
+    // Escala apenas visual: personagem mais legível sem alterar colisão/física.
+    const visualScale = 1.34;
+    ctx.translate(sx+w/2, sy+h);
+    ctx.scale(visualScale, visualScale);
+    ctx.translate(-(sx+w/2), -(sy+h));
+
+    // halo/rim light suave para separar a silhueta do cenário escuro
+    const auraColor=st==='dash'?'rgba(65,224,255,.20)':st==='charge'?'rgba(255,132,42,.18)':st==='special'?'rgba(211,105,255,.24)':'rgba(190,124,255,.10)';
+    const aura=ctx.createRadialGradient(sx+w/2,sy+h*.50,2,sx+w/2,sy+h*.50,34);
+    aura.addColorStop(0,auraColor);aura.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=aura;ctx.beginPath();ctx.arc(sx+w/2,sy+h*.50,34,0,Math.PI*2);ctx.fill();
 
     // sombra no chão
     ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(sx+w/2,sy+h+5,17,4,0,0,Math.PI*2);ctx.fill();

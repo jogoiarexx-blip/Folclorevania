@@ -6,7 +6,7 @@
 
 const REGION_ASSET_MANIFEST = [
   ['vila','Vila Abandonada'],
-  ['floresta','Floresta Sombria'],
+  ['floresta','Floresta Redemoinho'],
   ['chamas','Campo das Chamas'],
   ['raizes','Raízes Enganadoras'],
   ['mata','Mata Viva'],

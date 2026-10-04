@@ -79,6 +79,9 @@ const GameState = {
   shakeTimer:        0,
   shakePower:        0,
   regionTitleTimer:  2.8,
+  doorHint:          '',
+  doorHintTimer:     0,
+  damageFlash:       0,
 };
 
 function triggerScreenShake(power=5, duration=0.16) {
@@ -180,6 +183,7 @@ function _freshStart() {
   GameState.playerDead      = false;
   GameState.deathTimer      = 0;
   GameState._deathTransitionStarted = false;
+  GameState.doorHint = ''; GameState.doorHintTimer = 0; GameState.damageFlash = 0;
   if (typeof BossSystem !== 'undefined') { BossSystem.active=false; BossSystem.boss=null; BossSystem.introActive=false; BossSystem.defeatActive=false; }
 
   Player.health    = Player.maxHealth = 6;
@@ -404,6 +408,16 @@ function doorReqMet(req) {
   return !!Player.abilities[req];
 }
 
+function doorReqLabel(req) {
+  if (!req) return '';
+  if (req.startsWith('boss:')) {
+    const names={saci:'Saci',mula:'Mula sem Cabeça',curupira:'Curupira',caipora:'Caipora',ancestral:'Entidade Ancestral',boitata:'Boitatá',cuca:'Cuca'};
+    return `Passagem selada • derrote ${names[req.slice(5)] || req.slice(5)}`;
+  }
+  const names={doubleJump:'Pulo Duplo',charge:'Investida',special:'Poder Especial',dash:'Dash'};
+  return `Passagem selada • requer ${names[req] || req}`;
+}
+
 function checkDoors() {
   if (Transition.active || GameState.bossMode) return;
   const region = Regions[GameState.currentRegionId];
@@ -413,7 +427,7 @@ function checkDoors() {
       Player.x + Player.width  > t.x && Player.x < t.x + t.w &&
       Player.y + Player.height > t.y && Player.y < t.y + t.h
     ) {
-      if (!doorReqMet(door.req)) return;
+      if (!doorReqMet(door.req)) { GameState.doorHint=doorReqLabel(door.req); GameState.doorHintTimer=1.5; return; }
       Transition.start(async () => {
         await RegionStream.prepareTransition(door.to);
         GameState.currentRegionId = door.to;
@@ -505,6 +519,13 @@ function update(dt) {
   const region = getCurrentRegionForPhysics();
   Player.update(dt, region, GameState.bossMode ? [] : Regions[GameState.currentRegionId].enemies);
 
+  // Arenas com abismos: cair abaixo do limite agora conta como morte.
+  if (Player.y > region.bounds.bottom + 120) {
+    Player.health = 0;
+    _startPlayerDeath();
+    return;
+  }
+
   if (GameState.bossMode) {
     BossSystem.update(dt);
   } else {
@@ -529,6 +550,8 @@ function update(dt) {
     if (GameState.shakeTimer === 0) GameState.shakePower = 0;
   }
   if (GameState.regionTitleTimer > 0) GameState.regionTitleTimer = Math.max(0, GameState.regionTitleTimer - dt);
+  if (GameState.doorHintTimer > 0) GameState.doorHintTimer = Math.max(0, GameState.doorHintTimer - dt);
+  if (GameState.damageFlash > 0) GameState.damageFlash = Math.max(0, GameState.damageFlash - dt);
   Camera.follow(Player, GameState.bossMode ? 1600 : Regions[GameState.currentRegionId].width, canvas.width);
   Transition.update(dt);
   updateSaveFeedback(dt);
@@ -552,6 +575,7 @@ function render() {
       oneWayTiles: [], palette:pal, doors:[], id:rid,
     };
     MapSystem.drawTiles(ctx, fakeRegion);
+    MapSystem.drawWorldDecor(ctx, rid, true);
     ctx.save();
     const gateGlow = 0.45 + Math.sin(MapSystem._time*4)*0.2;
     ctx.fillStyle = `rgba(90,0,20,${gateGlow})`;
@@ -563,6 +587,7 @@ function render() {
   } else {
     const region = Regions[rid];
     MapSystem.drawTiles(ctx, region);
+    MapSystem.drawWorldDecor(ctx, rid, false);
     MapSystem.drawDoors(ctx, region);
     CampfireSystem.draw(ctx, rid);
 
@@ -587,13 +612,33 @@ function render() {
   Player.draw(ctx);
   if (GameSettings.ambientFx) MapSystem.drawForeground(ctx, pal, rid);
   MapSystem.drawFog(ctx, pal);
+  MapSystem.drawPostFX(ctx, pal, rid, Player, GameState.bossMode);
   ctx.restore();
 
   if (GameSettings.hud) HUD.draw(ctx, pal.name, GameState.visitedRegions, GameState.showMinimap);
   BossHUD.draw(ctx);
+  if (GameState.doorHintTimer > 0) drawDoorHint(ctx);
+  if (GameState.damageFlash > 0) drawDamageFlash(ctx);
   Transition.draw(ctx);
   drawSaveFeedback(ctx);
   if (GameState.playerDead) drawDeathOverlay(ctx);
+}
+
+function drawDamageFlash(ctx) {
+  const W=ctx.canvas.width,H=ctx.canvas.height,a=Math.min(.34,GameState.damageFlash*1.8);
+  ctx.save();
+  const g=ctx.createRadialGradient(W/2,H/2,H*.22,W/2,H/2,H*.82);
+  g.addColorStop(0,'rgba(255,40,70,0)');g.addColorStop(1,`rgba(180,10,38,${a})`);
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.restore();
+}
+
+function drawDoorHint(ctx) {
+  const W=ctx.canvas.width, alpha=Math.min(1,GameState.doorHintTimer*3);
+  ctx.save();ctx.globalAlpha=alpha;ctx.textAlign='center';
+  const w=Math.min(640,Math.max(360,GameState.doorHint.length*8.2));
+  const x=W/2-w/2,y=805;
+  const g=ctx.createLinearGradient(x,y,x+w,y);g.addColorStop(0,'rgba(20,3,8,0)');g.addColorStop(.18,'rgba(30,5,10,.86)');g.addColorStop(.82,'rgba(30,5,10,.86)');g.addColorStop(1,'rgba(20,3,8,0)');
+  ctx.fillStyle=g;ctx.fillRect(x,y,w,38);ctx.fillStyle='#ff9aa7';ctx.font='bold 11px monospace';ctx.fillText(GameState.doorHint,W/2,y+24);ctx.restore();
 }
 
 function drawDeathOverlay(ctx) {

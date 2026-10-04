@@ -1,0 +1,37 @@
+FOLCLOREVANIA v2.5
+
+GRÁFICOS
+- Canvas agora preserva 16:9 real e usa barras laterais/superiores quando necessário.
+- Personagem recebeu escala visual maior e halo de leitura sem alterar hitbox.
+- Inimigos receberam escala visual maior sem alterar colisão.
+- Adicionada iluminação local dinâmica ao redor do jogador.
+- Adicionados color grade regional e vignette cinematográfica.
+- Adicionados objetos decorativos específicos em todas as 8 regiões.
+- Arenas de chefe receberam selo ritual e feixe de luz sutil.
+- HUD inferior foi compactado para liberar a área de gameplay.
+- Adicionado flash periférico ao sofrer dano.
+
+CORREÇÕES
+- Corrigido crash de render no Campo das Chamas causado por reatribuição de const.
+- Corrigido estado do jogador após ataque no ar.
+- Corrigido estado do jogador após especial no ar.
+- Corrigido estado após knockback/dano no ar.
+- Adicionada morte por queda abaixo dos limites da arena.
+- Aviso de porta bloqueada agora informa qual chefe/habilidade é necessário.
+- Estado do aviso de porta é limpo em novo jogo.
+- Nome Floresta Redemoinho padronizado no streaming.
+- Nomes dos saves passam a usar as paletas oficiais das regiões.
+- Cooldown gráfico do especial passou de divisor 5 para 8 segundos.
+
+TESTES
+- Sintaxe de todos os arquivos JavaScript validada.
+- Movimento, pulo e ataque testados com input real no navegador headless.
+- Ataque no ar validado até o retorno ao estado jump.
+- Morte por queda validada.
+- Portas bloqueadas e mensagem de requisito validadas.
+- Render das 8 regiões validado.
+- Inicialização/render dos 7 chefes validada.
+- Progressão das 7 transições para frente validada.
+- Janela de streaming anterior/atual/próxima validada em cada transição.
+- Desbloqueios Saci/Mula/Curupira validados.
+- Final da Cuca validado.

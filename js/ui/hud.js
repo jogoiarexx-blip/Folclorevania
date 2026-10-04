@@ -73,35 +73,35 @@ const HUD = {
   },
 
   drawRelics(ctx) {
-    const H=ctx.canvas.height;
-    this._panel(ctx,18,H-96,300,76,12,.72);
-    ctx.font='bold 9px monospace';ctx.fillStyle='#7b687f';ctx.fillText('RELÍQUIAS EQUIPADAS',32,H-77);
-    if(!Player.equippedRelics.length){ctx.font='10px monospace';ctx.fillStyle='#4c4251';ctx.fillText('Nenhuma relíquia equipada',32,H-50);return;}
+    const H=ctx.canvas.height,y=H-58;
+    this._panel(ctx,18,y,300,44,10,.66);
+    ctx.font='bold 8px monospace';ctx.fillStyle='#75657c';ctx.fillText('RELÍQUIAS',30,y+14);
+    if(!Player.equippedRelics.length){ctx.font='9px monospace';ctx.fillStyle='#504655';ctx.fillText('Nenhuma equipada',30,y+32);return;}
     Player.equippedRelics.slice(0,3).forEach((r,i)=>{
-      const x=32+i*88;
-      ctx.fillStyle='rgba(193,137,70,.11)';ctx.strokeStyle='rgba(217,165,87,.25)';ctx.beginPath();ctx.roundRect(x,H-65,78,34,7);ctx.fill();ctx.stroke();
-      ctx.font='15px monospace';ctx.fillStyle='#e3ba6d';ctx.fillText(r.icon,x+8,H-43);
-      ctx.font='7px monospace';ctx.fillStyle='#927950';ctx.fillText((r.name||'').slice(0,8).toUpperCase(),x+28,H-45);
+      const x=100+i*68;
+      ctx.fillStyle='rgba(193,137,70,.10)';ctx.strokeStyle='rgba(217,165,87,.22)';ctx.beginPath();ctx.roundRect(x,y+8,60,27,6);ctx.fill();ctx.stroke();
+      ctx.font='13px monospace';ctx.fillStyle='#e3ba6d';ctx.fillText(r.icon,x+6,y+27);
+      ctx.font='6px monospace';ctx.fillStyle='#927950';ctx.fillText((r.name||'').slice(0,7).toUpperCase(),x+22,y+24);
     });
   },
 
   drawAbilities(ctx) {
-    const ab=Player.abilities,W=ctx.canvas.width,H=ctx.canvas.height;
+    const ab=Player.abilities,W=ctx.canvas.width,H=ctx.canvas.height,y=H-58;
     const slots=[
       {key:'dash',icon:'➤',label:'DASH',keyName:'SHIFT',color:'#41d8ff'},
       {key:'doubleJump',icon:'↟',label:'PULO II',keyName:'SPACE',color:'#77eaff'},
       {key:'charge',icon:'◆',label:'INVEST.',keyName:'X',color:'#ff9c3f'},
       {key:'special',icon:'✦',label:'ESPECIAL',keyName:'C',color:'#d16dff'},
     ];
-    const pw=350;this._panel(ctx,W-pw-18,H-96,pw,76,12,.72);
-    ctx.font='bold 9px monospace';ctx.fillStyle='#7b687f';ctx.fillText('HABILIDADES',W-pw,H-77);
+    const pw=350;this._panel(ctx,W-pw-18,y,pw,44,10,.66);
+    ctx.font='bold 8px monospace';ctx.fillStyle='#75657c';ctx.fillText('HABILIDADES',W-pw,y+14);
     slots.forEach((s,i)=>{
-      const x=W-pw+i*82,y=H-66,on=!!ab[s.key];
-      ctx.fillStyle=on?'rgba(255,255,255,.045)':'rgba(0,0,0,.18)';ctx.strokeStyle=on?s.color+'55':'#2d2730';ctx.beginPath();ctx.roundRect(x,y,72,36,7);ctx.fill();ctx.stroke();
-      ctx.fillStyle=on?s.color:'#3b3540';ctx.font='bold 14px monospace';ctx.fillText(s.icon,x+8,y+23);
-      ctx.font='7px monospace';ctx.fillStyle=on?'#a89bac':'#443d47';ctx.fillText(s.label,x+27,y+14);ctx.fillStyle=on?s.color+'aa':'#403843';ctx.fillText(s.keyName,x+27,y+25);
+      const x=W-pw+78+i*64,cy=y+8,on=!!ab[s.key];
+      ctx.fillStyle=on?'rgba(255,255,255,.04)':'rgba(0,0,0,.16)';ctx.strokeStyle=on?s.color+'55':'#2d2730';ctx.beginPath();ctx.roundRect(x,cy,57,27,6);ctx.fill();ctx.stroke();
+      ctx.fillStyle=on?s.color:'#3b3540';ctx.font='bold 11px monospace';ctx.fillText(s.icon,x+6,cy+18);
+      ctx.font='6px monospace';ctx.fillStyle=on?'#a89bac':'#443d47';ctx.fillText(s.label,x+20,cy+11);ctx.fillStyle=on?s.color+'aa':'#403843';ctx.fillText(s.keyName,x+20,cy+20);
     });
-    if(ab.special && Player.specialCooldown>0){const cd=Math.min(1,Player.specialCooldown/5);ctx.fillStyle='rgba(0,0,0,.55)';ctx.fillRect(W-100,H-66,72,36*cd);}
+    if(ab.special && Player.specialCooldown>0){const cd=Math.min(1,Player.specialCooldown/8);ctx.fillStyle='rgba(0,0,0,.50)';ctx.fillRect(W-93,y+8,57,27*cd);}
   },
 
   drawRegionTitle(ctx,name) {

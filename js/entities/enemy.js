@@ -88,7 +88,9 @@ function createEnemy(x, y, regionId) {
       const [base,dark,glow]=palettes[this.regionId]||palettes[0];
       const bob=Math.sin((typeof MapSystem!=='undefined'?MapSystem._time:0)*5+this.x*.01)*1.3;
       ctx.save();if(this.invincible)ctx.globalAlpha=(Math.floor(Date.now()/60)%2===0)?.35:1;
-      ctx.fillStyle='rgba(0,0,0,.28)';ctx.beginPath();ctx.ellipse(sx+w/2,sy+h+3,w*.48,4,0,0,Math.PI*2);ctx.fill();
+      // inimigos ficam mais legíveis sem aumentar a hitbox
+      const visualScale=1.16;ctx.translate(sx+w/2,sy+h);ctx.scale(visualScale,visualScale);ctx.translate(-(sx+w/2),-(sy+h));
+      ctx.fillStyle='rgba(0,0,0,.32)';ctx.beginPath();ctx.ellipse(sx+w/2,sy+h+3,w*.50,4.5,0,0,Math.PI*2);ctx.fill();
       if(chase){ctx.globalAlpha=.11;ctx.fillStyle=glow;ctx.beginPath();ctx.ellipse(sx+w/2,sy+h*.55,w*.75,h*.7,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
       const g=ctx.createRadialGradient(sx+w*.45,sy+h*.35,2,sx+w*.5,sy+h*.55,w*.75);g.addColorStop(0,kb?'#fff':atk?glow:base);g.addColorStop(1,dark);ctx.fillStyle=g;
       ctx.beginPath();ctx.moveTo(sx+w*.12,sy+h);ctx.bezierCurveTo(sx-4,sy+h*.62+bob,sx+2,sy+5,sx+w*.5,sy+2+bob);ctx.bezierCurveTo(sx+w-2,sy+5,sx+w+4,sy+h*.62-bob,sx+w*.88,sy+h);ctx.closePath();ctx.fill();

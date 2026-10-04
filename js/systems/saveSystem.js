@@ -148,7 +148,7 @@ const SaveSystem = {
     const visited = Array.isArray(data.visitedRegions) ? data.visitedRegions : [];
     const player = data.player && typeof data.player === 'object' ? data.player : {};
     const defeated = bosses.map(b => bossNames[b] || b).join(', ') || 'Nenhum';
-    const regionNames = ['Vila Abandonada','Floresta','Campo das Chamas','Raízes','Mata Viva','Templo Ancestral','Pântano do Boitatá','Covil da Cuca'];
+    const regionNames = REGION_PALETTES.map(p => p.name);
     return {
       region:    regionNames[data.regionId] || `Região ${Number.isInteger(data.regionId) ? data.regionId : 0}`,
       bosses:    defeated,

@@ -7,7 +7,7 @@
 *{box-sizing:border-box} html,body{width:100%;height:100%}
 body{margin:0;background:#030005;color:var(--text);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;overflow:hidden;display:flex;align-items:center;justify-content:center;touch-action:none}
 body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:4;background:linear-gradient(rgba(255,255,255,.012) 50%,rgba(0,0,0,.035) 50%);background-size:100% 4px;mix-blend-mode:soft-light;opacity:.35}
-canvas{display:block;background:#0b0710;width:100vw;height:100vh;object-fit:contain;image-rendering:auto;outline:none}
+canvas{display:block;background:#0b0710;width:min(100vw,calc(100vh * 16 / 9));height:auto;max-width:100vw;max-height:100vh;aspect-ratio:16/9;image-rendering:auto;outline:none;box-shadow:0 0 80px rgba(0,0,0,.55)}
 .hidden{display:none!important}
 
 /* ---------- Menus ---------- */

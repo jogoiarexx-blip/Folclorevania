@@ -75,7 +75,7 @@ const MapSystem = {
       const baseX=(i*137+regionId*61)%W;
       const baseY=(i*83+regionId*37)%(H*.72);
       const x=(baseX + Math.sin(t*(.18+(i%4)*.05)+i)*24 + W)%W;
-      const y=baseY + Math.cos(t*(.22+(i%5)*.04)+i)*16;
+      let y=baseY + Math.cos(t*(.22+(i%5)*.04)+i)*16;
       let color=palette.accent, alpha=.14, size=1.5+(i%3);
       if(regionId===0){color='#d6c08a';alpha=.08;}
       if(regionId===1||regionId===4){color=regionId===4?'#76ffb0':'#a6ff7a';alpha=.2;}
@@ -438,6 +438,79 @@ const MapSystem = {
     }
   },
 
+
+  drawWorldDecor(ctx, regionId, bossMode=false) {
+    const W=ctx.canvas.width,H=ctx.canvas.height,t=this._time;
+    const q=(typeof GameSettings!=='undefined'&&GameSettings.quality)||'high';
+    ctx.save();
+    const X = x => x-Camera.x;
+    const ground=840;
+
+    // Arena de chefe: selo ritual e luz vertical discreta.
+    if (bossMode) {
+      const cx=W/2, pulse=.45+.2*Math.sin(t*2.4);
+      ctx.globalAlpha=q==='low'?.16:.24;
+      ctx.strokeStyle=REGION_PALETTES[regionId].accent;ctx.lineWidth=2;
+      for(let r=0;r<3;r++){ctx.beginPath();ctx.ellipse(cx,ground-5,150+r*70,18+r*7,0,0,Math.PI*2);ctx.stroke();}
+      ctx.globalAlpha=pulse*.12;const beam=ctx.createLinearGradient(cx,120,cx,ground);beam.addColorStop(0,'rgba(255,255,255,0)');beam.addColorStop(.55,REGION_PALETTES[regionId].accent+'44');beam.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=beam;ctx.fillRect(cx-70,110,140,ground-100);
+      ctx.restore();return;
+    }
+
+    if(regionId===0){
+      // Vila: postes tortos, cercas e janelas distantes.
+      ctx.strokeStyle='#3b281d';ctx.fillStyle='#17100d';ctx.lineWidth=7;
+      for(const x of [185,760,1375]){const sx=X(x);ctx.beginPath();ctx.moveTo(sx,ground);ctx.lineTo(sx+5,ground-95);ctx.stroke();ctx.fillRect(sx-14,ground-101,34,8);const glow=ctx.createRadialGradient(sx+4,ground-92,0,sx+4,ground-92,42);glow.addColorStop(0,'rgba(255,190,90,.18)');glow.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=glow;ctx.fillRect(sx-40,ground-135,88,88);ctx.fillStyle='#c58a45';ctx.globalAlpha=.55;ctx.fillRect(sx,ground-97,9,10);ctx.globalAlpha=1;ctx.fillStyle='#17100d';}
+      ctx.strokeStyle='rgba(65,43,28,.75)';ctx.lineWidth=4;for(const start of [325,1055]){for(let i=0;i<4;i++){const sx=X(start+i*34);ctx.beginPath();ctx.moveTo(sx,ground);ctx.lineTo(sx-2,ground-42-(i%2)*6);ctx.stroke();}ctx.beginPath();ctx.moveTo(X(start-5),ground-31);ctx.lineTo(X(start+108),ground-25);ctx.stroke();}
+    } else if(regionId===1){
+      ctx.strokeStyle='#153b19';ctx.lineWidth=12;for(const x of [120,610,980,1490]){const sx=X(x);ctx.beginPath();ctx.moveTo(sx,ground);ctx.bezierCurveTo(sx-18,690,sx+26,560,sx+(x%3-1)*25,430);ctx.stroke();}
+      ctx.strokeStyle='rgba(80,150,75,.35)';ctx.lineWidth=2;for(let i=0;i<(q==='high'?8:4);i++){const sx=X(100+i*205);ctx.beginPath();ctx.moveTo(sx,0);ctx.bezierCurveTo(sx+25,120,sx-22,220,sx+12,360);ctx.stroke();}
+    } else if(regionId===2){
+      ctx.fillStyle='#28100a';for(const x of [230,520,1010,1310]){const sx=X(x);ctx.beginPath();ctx.moveTo(sx-18,ground);ctx.lineTo(sx-9,ground-83);ctx.lineTo(sx+12,ground-110);ctx.lineTo(sx+17,ground);ctx.closePath();ctx.fill();}
+      const n=q==='high'?10:5;for(let i=0;i<n;i++){const sx=X(80+i*157),fy=ground-12;ctx.fillStyle=i%2?'rgba(255,86,18,.32)':'rgba(255,179,48,.25)';ctx.beginPath();ctx.moveTo(sx,fy);ctx.quadraticCurveTo(sx-10,fy-22-Math.sin(t*5+i)*7,sx+2,fy-36);ctx.quadraticCurveTo(sx+13,fy-18,sx,fy);ctx.fill();}
+    } else if(regionId===3){
+      ctx.strokeStyle='rgba(130,58,166,.34)';ctx.lineWidth=8;for(const x of [90,440,840,1210,1540]){const sx=X(x);ctx.beginPath();ctx.moveTo(sx,ground);ctx.bezierCurveTo(sx+90,760,sx-75,650,sx+20,520);ctx.stroke();ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(sx+14,650);ctx.quadraticCurveTo(sx+80,610,sx+115,560);ctx.stroke();ctx.lineWidth=8;}
+    } else if(regionId===4){
+      ctx.fillStyle='rgba(9,45,21,.72)';for(const x of [140,540,930,1420]){const sx=X(x);ctx.fillRect(sx-10,ground-135,20,135);ctx.beginPath();ctx.arc(sx,ground-145,42,0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle='#61d888';ctx.globalAlpha=.45;for(let i=0;i<(q==='high'?13:7);i++){const sx=X(55+i*121),sy=ground-7-(i%3)*5;ctx.beginPath();ctx.arc(sx,sy,2+(i%2),0,Math.PI*2);ctx.fill();}ctx.globalAlpha=1;
+    } else if(regionId===5){
+      ctx.fillStyle='rgba(17,5,43,.82)';ctx.strokeStyle='rgba(128,81,210,.25)';ctx.lineWidth=2;for(const x of [160,480,1120,1440]){const sx=X(x);ctx.fillRect(sx-21,ground-190,42,190);ctx.strokeRect(sx-21,ground-190,42,190);ctx.fillRect(sx-30,ground-198,60,10);}
+      ctx.strokeStyle='rgba(176,112,255,.28)';ctx.lineWidth=1.5;for(const x of [320,800,1280]){const sx=X(x);ctx.beginPath();ctx.arc(sx,ground-22,25,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(sx,ground-47);ctx.lineTo(sx+21,ground-9);ctx.lineTo(sx-21,ground-9);ctx.closePath();ctx.stroke();}
+    } else if(regionId===6){
+      ctx.fillStyle='rgba(24,88,63,.38)';for(let i=0;i<(q==='high'?16:9);i++){const sx=X(35+i*101),h=12+(i%4)*7;ctx.fillRect(sx,ground-h,3,h);ctx.beginPath();ctx.ellipse(sx+5,ground-h+3,8,3,(i%2?.5:-.5),0,Math.PI*2);ctx.fill();}
+      ctx.fillStyle='rgba(94,170,137,.13)';for(const x of [260,790,1260]){const sx=X(x);ctx.beginPath();ctx.ellipse(sx,ground-4,105,11,0,0,Math.PI*2);ctx.fill();}
+    } else if(regionId===7){
+      ctx.fillStyle='rgba(48,12,41,.78)';for(const x of [175,520,1080,1420]){const sx=X(x);ctx.fillRect(sx-14,ground-150,28,150);ctx.fillRect(sx-27,ground-158,54,9);}
+      ctx.fillStyle='rgba(255,97,166,.42)';for(const x of [300,660,950,1320]){const sx=X(x),fl=.5+.5*Math.sin(t*5+x);ctx.globalAlpha=.25+fl*.3;ctx.beginPath();ctx.moveTo(sx,ground-20);ctx.quadraticCurveTo(sx-8,ground-46-fl*8,sx+1,ground-58);ctx.quadraticCurveTo(sx+9,ground-38,sx,ground-20);ctx.fill();}ctx.globalAlpha=1;
+    }
+    ctx.restore();
+  },
+
+  drawPostFX(ctx, palette, regionId, player, bossMode=false) {
+    const W=ctx.canvas.width,H=ctx.canvas.height;
+    const q=(typeof GameSettings!=='undefined'&&GameSettings.quality)||'high';
+    ctx.save();
+
+    // Luz local no herói: melhora leitura da silhueta e das plataformas próximas.
+    if(q!=='low'){
+      const px=player.x-Camera.x+player.width/2,py=player.y+player.height*.55;
+      ctx.globalCompositeOperation='screen';
+      const radius=q==='high'?155:115;
+      const light=ctx.createRadialGradient(px,py,5,px,py,radius);
+      light.addColorStop(0,bossMode?'rgba(210,155,255,.11)':'rgba(255,228,185,.10)');
+      light.addColorStop(.38,palette.accent+'12');light.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=light;ctx.fillRect(px-radius,py-radius,radius*2,radius*2);
+      ctx.globalCompositeOperation='source-over';
+    }
+
+    // Color grade sutil por região.
+    ctx.globalAlpha=bossMode?.055:.026;ctx.fillStyle=palette.accent;ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;
+
+    // Vignette cinematográfica sem esconder o centro da ação.
+    const vig=ctx.createRadialGradient(W/2,H*.48,H*.22,W/2,H*.48,H*.78);
+    vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(.68,'rgba(0,0,0,.04)');vig.addColorStop(1,bossMode?'rgba(0,0,0,.44)':'rgba(0,0,0,.34)');
+    ctx.fillStyle=vig;ctx.fillRect(0,0,W,H);
+    ctx.restore();
+  },
 
   drawForeground(ctx, palette, regionId) {
     const W=ctx.canvas.width,H=ctx.canvas.height,t=this._time;

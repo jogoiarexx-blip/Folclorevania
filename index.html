@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#090016">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23080012%27/%3E%3Cpath d=%27M16 14h32v8H25v8h19v8H25v12h-9z%27 fill=%27%23c078ff%27/%3E%3C/svg%3E">
+  <title>Folclorevania v2.4 — Polimento Final</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div id="mainMenu" class="menu title-menu">
+  <div class="title-scene" aria-hidden="true">
+    <div class="scene-moon"></div>
+    <div class="scene-mist mist-a"></div>
+    <div class="scene-mist mist-b"></div>
+    <div class="scene-hill hill-back"></div>
+    <div class="scene-hill hill-front"></div>
+    <div class="scene-tree tree-a"></div>
+    <div class="scene-tree tree-b"></div>
+    <div class="scene-hero"><span></span></div>
+    <i class="firefly f1"></i><i class="firefly f2"></i><i class="firefly f3"></i><i class="firefly f4"></i><i class="firefly f5"></i>
+  </div>
+
+  <div class="title-shell">
+    <section class="title-copy">
+      <div class="eyebrow">METROIDVANIA • FOLCLORE BRASILEIRO</div>
+      <div class="brand-mark" aria-hidden="true">F</div>
+      <h1>FOLCLORE<span>VANIA</span></h1>
+      <p class="menu-subtitle">Atravesse terras amaldiçoadas, desperte relíquias antigas e enfrente entidades do folclore brasileiro.</p>
+      <div class="title-tags">
+        <span>8 regiões</span><span>7 chefes</span><span>relíquias</span><span>progressão</span>
+      </div>
+      <div class="menu-note"><span class="portal-dot"></span> Os portais roxos marcam confrontos com entidades.</div>
+    </section>
+
+    <section class="title-panel">
+      <div class="panel-kicker">A JORNADA COMEÇA AQUI</div>
+      <div class="menu-actions vertical-actions title-actions">
+        <button class="btn-main btn-large" onclick="continueLatestGame()"><span>▶</span> Continuar</button>
+        <button onclick="openLoadScreen()"><span>▦</span> Novo jogo / Slots</button>
+        <button onclick="openOptions('menu')"><span>⚙</span> Opções</button>
+        <button onclick="toggleFullscreen()"><span>⛶</span> Tela cheia</button>
+        <button onclick="showCredits()"><span>✦</span> Créditos</button>
+      </div>
+      <div class="controls-mini">
+        <span><b>← →</b> mover</span><span><b>Espaço</b> pular</span><span><b>Z</b> atacar</span>
+        <span><b>Shift</b> dash</span><span><b>M</b> mapa</span><span><b>Esc</b> pausa</span>
+      </div>
+      <div class="version-badge">v2.4 • polimento de gameplay</div>
+    </section>
+  </div>
+</div>
+
+<div id="saveScreen" class="hidden"></div>
+
+<div id="streamLoadingScreen" class="stream-loading hidden" aria-live="polite">
+  <div class="stream-loading-card">
+    <div class="stream-loading-kicker">CARREGAMENTO DE REGIÃO</div>
+    <div id="streamLoadingTitle" class="stream-loading-title">Preparando...</div>
+    <div class="stream-loading-track"><div id="streamLoadingBar" class="stream-loading-bar"></div></div>
+    <div id="streamLoadingStatus" class="stream-loading-status">0%</div>
+    <div id="streamLoadedWindow" class="stream-loading-window">—</div>
+  </div>
+</div>
+
+<div id="optionsScreen" class="menu hidden">
+  <div class="menu-card options-card">
+    <div class="eyebrow">CONFIGURAÇÕES</div>
+    <h2>Opções</h2>
+    <p class="options-intro">Ajuste os efeitos sem alterar a jogabilidade.</p>
+    <div class="option-list">
+      <label class="option-row">
+        <span><b>Qualidade gráfica</b><small>Define a quantidade de efeitos ambientais.</small></span>
+        <select id="graphicsQuality" onchange="updateGameSetting('quality', this.value)">
+          <option value="high">Alta</option><option value="medium">Média</option><option value="low">Baixa</option>
+        </select>
+      </label>
+      <label class="option-row toggle-row">
+        <span><b>Efeitos ambientais</b><small>Névoa, brasas, vaga-lumes e partículas de cenário.</small></span>
+        <input id="ambientFxToggle" type="checkbox" onchange="updateGameSetting('ambientFx', this.checked)">
+      </label>
+      <label class="option-row toggle-row">
+        <span><b>Tremor de tela</b><small>Impacto visual ao sofrer ou causar golpes fortes.</small></span>
+        <input id="screenShakeToggle" type="checkbox" onchange="updateGameSetting('screenShake', this.checked)">
+      </label>
+      <label class="option-row toggle-row">
+        <span><b>HUD completo</b><small>Exibe objetivo, relíquias e habilidades na tela.</small></span>
+        <input id="hudToggle" type="checkbox" onchange="updateGameSetting('hud', this.checked)">
+      </label>
+    </div>
+    <div class="menu-actions">
+      <button class="btn-main" onclick="closeOptions()">Aplicar e voltar</button>
+      <button onclick="resetGameSettings()">Restaurar padrão</button>
+    </div>
+  </div>
+</div>
+
+<div id="creditsScreen" class="menu hidden">
+  <div class="menu-card compact-card">
+    <div class="eyebrow">CRÉDITOS</div>
+    <h2>Folclorevania</h2>
+    <p>Desenvolvido por Su Alves</p>
+    <p class="credits-note">Metroidvania 2D inspirado em lendas, matas, vilas e entidades do folclore brasileiro.</p>
+    <button class="btn-main" onclick="backToMenu()">Voltar</button>
+  </div>
+</div>
+
+<div id="pauseMenu" class="menu hidden">
+  <div class="menu-card compact-card pause-card">
+    <div class="pause-symbol">❖</div>
+    <div class="eyebrow">JOGO PAUSADO</div>
+    <h2>Pausa</h2>
+    <div id="pauseRegion" class="pause-region">—</div>
+    <div class="menu-actions vertical-actions">
+      <button class="btn-main" onclick="resumeGame()">Continuar</button>
+      <button onclick="quickSavePrompt()">💾 Salvar</button>
+      <button onclick="openOptions('pause')">⚙ Opções</button>
+      <button onclick="toggleFullscreen()">⛶ Tela cheia</button>
+      <button class="btn-danger-soft" onclick="returnToTitle()">Voltar ao menu</button>
+    </div>
+  </div>
+</div>
+
+<div id="endingScreen" class="menu hidden">
+  <div class="menu-card compact-card">
+    <div class="eyebrow">A LENDA CONTINUA</div>
+    <h2>A Cuca foi derrotada</h2>
+    <p class="menu-subtitle">A última maldição caiu. Das ruínas da vila ao covil da Cuca, a jornada principal chegou ao fim — mas os segredos, relíquias e caminhos já descobertos continuam abertos para exploração.</p>
+    <div id="endingStats" class="ending-stats"></div>
+    <div class="menu-actions vertical-actions">
+      <button class="btn-main" onclick="continueAfterEnding()">Continuar explorando</button>
+      <button onclick="returnToTitle()">Voltar ao menu</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="gameCanvas" aria-label="Folclorevania"></canvas>
+
+<div id="touchControls" class="touch-controls" aria-hidden="true">
+  <div class="touch-left">
+    <button class="touch-btn touch-dir" data-code="ArrowLeft" aria-label="Mover para esquerda">◀</button>
+    <button class="touch-btn touch-dir" data-code="ArrowRight" aria-label="Mover para direita">▶</button>
+  </div>
+  <div class="touch-right">
+    <button class="touch-btn action-jump" data-code="Space" aria-label="Pular">PULO</button>
+    <button class="touch-btn" data-code="KeyZ" aria-label="Atacar">ATK</button>
+    <button class="touch-btn" data-code="ShiftLeft" aria-label="Dash">DASH</button>
+    <button class="touch-btn" data-code="KeyX" aria-label="Investida">X</button>
+    <button class="touch-btn" data-code="KeyC" aria-label="Especial">ESP</button>
+  </div>
+</div>
+
+<script src="js/systems/regionData.js"></script>
+<script src="js/systems/regionStream.js"></script>
+<script src="js/systems/relicSystem.js"></script>
+<script src="js/core/input.js"></script>
+<script src="js/core/camera.js"></script>
+<script src="js/systems/physics.js"></script>
+<script src="js/systems/particleSystem.js"></script>
+<script src="js/systems/mapSystem.js"></script>
+<script src="js/systems/transitionSystem.js"></script>
+<script src="js/systems/campfireSystem.js"></script>
+<script src="js/systems/saveSystem.js"></script>
+<script src="js/entities/player.js"></script>
+<script src="js/entities/enemy.js"></script>
+<script src="js/entities/bossSystem.js"></script>
+<script src="js/ui/hud.js"></script>
+<script src="js/ui/bossHUD.js"></script>
+<script src="js/core/gameLoop.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>

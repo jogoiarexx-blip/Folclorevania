@@ -58,8 +58,15 @@ const Player = {
     if (this.equippedRelics.length >= 3) return false;
     this.equippedRelics.push(r); r.apply(this); return true;
   },
-  getDamage()   { return this.baseDamage + this.damageBonus; },
-  getDashCost() { return Math.max(5, this.baseDashCost - this.dashCostMod); },
+  getDamage(target) {
+    let damage = this.baseDamage + this.damageBonus + SkillTree.bonus('damage');
+    if (this.state === 'special') damage += SkillTree.bonus('specialDamage');
+    if (target && target.maxHealth > 0 && target.health / target.maxHealth < .35)
+      damage *= 1 + SkillTree.bonus('finisher');
+    if (Math.random() < SkillTree.bonus('critChance')) damage *= 1.65;
+    return Math.round(damage * 100) / 100;
+  },
+  getDashCost() { return Math.max(5, this.baseDashCost - this.dashCostMod - SkillTree.bonus('dashCost')); },
 
   unlockAbility(name) {
     if (Object.prototype.hasOwnProperty.call(this.abilities, name)) {
@@ -73,7 +80,7 @@ const Player = {
     if (this.invincible || this.state === 'dash') return;
     this.health = Math.max(0, this.health - n);
     this.invincible      = true;
-    this.invincibleTimer = 0.9;
+    this.invincibleTimer = 0.9 + SkillTree.bonus('hurtInvulnerability');
     const dir = (sourceX !== undefined && sourceX < this.x) ? 1 : -1;
     this.vx = dir * 5;
     this.vy = -4;
@@ -167,7 +174,7 @@ const Player = {
   startDash() {
     this.stamina -= this.getDashCost();
     this.invincible = true;
-    this.dashTimer  = 0.18;
+    this.dashTimer  = 0.18 + SkillTree.bonus('dashDuration');
     this.vx = this.facing * this.dashSpeed;
     this.state = 'dash';
     Particles.dash(this.x, this.y, this.facing);
@@ -176,8 +183,9 @@ const Player = {
   startAttack() {
     this.attackTimer = 0.25;
     this.vx = 0;
-    const ox = this.facing > 0 ? this.width : -36;
-    this.setHit(ox, 8, 36, 28);
+    const reach = SkillTree.bonus('reach');
+    const ox = this.facing > 0 ? this.width : -36 - reach;
+    this.setHit(ox, 8, 36 + reach, 28);
     this.state = 'attack';
   },
 
@@ -194,7 +202,7 @@ const Player = {
 
   startSpecial() {
     this.specialTimer    = 0.4;
-    this.specialCooldown = 8.0;
+    this.specialCooldown = Math.max(2, 8.0 - SkillTree.bonus('specialCooldown'));
     this.setHit(-50, -20, this.width + 100, this.height + 40);
     this.state = 'special';
     Particles.special(this.x, this.y);
@@ -240,7 +248,7 @@ const Player = {
 
     // stamina regen
     if (this.stamina < 100)
-      this.stamina = Math.min(100, this.stamina + (this.baseStaminaRegen + this.staminaRegenMod) * dt * 60);
+      this.stamina = Math.min(100, this.stamina + (this.baseStaminaRegen + this.staminaRegenMod + SkillTree.bonus('regen')) * dt * 60);
 
     if (this.specialCooldown > 0) this.specialCooldown -= dt;
 
@@ -284,7 +292,7 @@ const Player = {
       let hitAny = false;
       for (const e of enemies) {
         if (e.health > 0 && boxHits(this.hitBox, e.hurtBox)) {
-          e.takeDamage(this.getDamage(), this.x + this.width / 2);
+          e.takeDamage(this.getDamage(e), this.x + this.width / 2);
           Particles.impact((this.x + e.x) / 2, (this.y + e.y) / 2 + 10, this.facing);
           if (this.state === 'special' && this.health < this.maxHealth)
             this.health = Math.min(this.maxHealth, this.health + 1);
@@ -295,7 +303,7 @@ const Player = {
       if (typeof BossSystem !== 'undefined' && BossSystem.boss && BossSystem.boss.health > 0) {
         const boss = BossSystem.boss;
         if (boxHits(this.hitBox, boss.hurtBox)) {
-          boss.takeDamage(this.getDamage(), this.x + this.width / 2);
+          boss.takeDamage(this.getDamage(boss), this.x + this.width / 2);
           Particles.impact((this.x + boss.x) / 2, (this.y + boss.y) / 2 + 10, this.facing);
           if (this.state === 'special' && this.health < this.maxHealth)
             this.health = Math.min(this.maxHealth, this.health + 1);

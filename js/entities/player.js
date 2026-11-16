@@ -79,6 +79,7 @@ const Player = {
   takeDamage(n, sourceX) {
     if (this.invincible || this.state === 'dash') return;
     this.health = Math.max(0, this.health - n);
+    this._artHitFlash = .22;
     this.invincible      = true;
     this.invincibleTimer = 0.9 + SkillTree.bonus('hurtInvulnerability');
     const dir = (sourceX !== undefined && sourceX < this.x) ? 1 : -1;
@@ -313,10 +314,12 @@ const Player = {
       if (hitAny && this.state !== 'special' && this.state !== 'charge')
         this.clearHit();
     }
+    if(typeof EntityArt!=='undefined') EntityArt.updatePlayer(dt,this);
   },
 
   // ── render ───────────────────────────────────────────────
   draw(ctx) {
+    if(typeof EntityArt!=='undefined'){ EntityArt.drawPlayer(ctx,this); return; }
     const sx=this.x-Camera.x,sy=this.y,w=this.width,h=this.height,st=this.state;
     const time=(typeof MapSystem!=='undefined'?MapSystem._time:Date.now()/1000);
     const runBob=st==='run'?Math.sin(time*15)*1.6:0;

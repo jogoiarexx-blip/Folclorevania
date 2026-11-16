@@ -119,6 +119,10 @@ const SkillTree = {
   open(){
     if(typeof GameState==='undefined'||!GameState.started||GameState.playerDead||
        GameState.bossMode || (typeof Transition!=='undefined'&&Transition.active)) return;
+    if(['saveScreen','optionsScreen','endingScreen','streamLoadingScreen'].some(id=>{
+      const screen=document.getElementById(id);
+      return screen && !screen.classList.contains('hidden');
+    })) return;
     if(this.opened) return;
     this.returnToPause=!!GameState.paused;
     GameState.paused=true;

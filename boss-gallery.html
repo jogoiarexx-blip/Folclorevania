@@ -112,7 +112,13 @@ function frame(ts){
     if(!paused)tick(b,dt);
     Camera.x=b.x+b.width/2-640;
     drawBackground(b,BossVisuals.time);
+    // Lupa da galeria: os detalhes ficam legíveis sem mudar a escala no jogo.
+    ctx.save();
+    ctx.translate(640,530);
+    ctx.scale(2.45,2.45);
+    ctx.translate(-640,-(b.y+b.height/2));
     BossSystem.draw(ctx);
+    ctx.restore();
   }
   requestAnimationFrame(frame);
 }

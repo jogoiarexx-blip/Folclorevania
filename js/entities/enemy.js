@@ -21,15 +21,17 @@ function createEnemy(x, y, regionId) {
     updateHurtBox(){ this.hurtBox.x=this.x; this.hurtBox.y=this.y; },
 
     takeDamage(n, srcX) {
-      if (this.invincible) return;
+      if (this.invincible || this.health <= 0) return;
       this.health -= n;
       this.invincible=true; this.invincibleTimer=0.35;
       const dir = (srcX !== undefined && srcX < this.x) ? 1 : -1;
       this.vx=dir*4.5; this.vy=-2.5; this.knockbackTimer=0.14;
       Particles.impact(this.x+this.width/2, this.y+this.height/2, dir);
       if (typeof triggerScreenShake === 'function') triggerScreenShake(2.2, 0.08);
-      if (this.health <= 0)
+      if (this.health <= 0) {
         Particles.death(this.x+this.width/2, this.y+this.height/2, '#44ff44');
+        SkillTree.onEnemyDefeated(this.regionId);
+      }
     },
 
     updateAI(dt, player) {

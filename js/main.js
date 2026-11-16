@@ -298,6 +298,8 @@ window.addEventListener('keydown', e => {
     if (!e.repeat) SkillTree.toggle();
     return;
   }
+  // Não processar atalhos de jogo por trás do painel de habilidades.
+  if (SkillTree.opened) return;
   if (e.repeat && ['KeyM','KeyH','Escape','KeyP','KeyF'].includes(e.code)) return;
 
   if (e.code === 'Escape' && !document.getElementById('optionsScreen').classList.contains('hidden')) {

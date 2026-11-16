@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080611">
+<title>Galeria de Chefes | Folclorevania v2.9</title>
+<style>
+:root{color-scheme:dark;--fg:#f1e6ff;--muted:#b1a5c5;--line:#38304c;--accent:#c58aff}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% 12%,#2c1d43,#080611 66%);color:var(--fg);font:15px/1.5 system-ui,sans-serif}
+header{padding:26px 22px 16px;text-align:center}a{color:#d4a7ff}h1{margin:4px 0;font-size:clamp(24px,4vw,36px)}
+header p{color:var(--muted);margin:4px auto;max-width:690px}
+.wrap{max-width:1200px;margin:auto;padding:0 14px 36px}
+.stage{border:1px solid #493556;border-radius:16px;overflow:hidden;background:#0b0914;box-shadow:0 20px 75px #0008}
+canvas{width:100%;aspect-ratio:16/9;display:block;touch-action:pan-y}
+.panel{padding:18px;background:#110c1b;display:grid;gap:14px}
+.row{display:flex;gap:9px;flex-wrap:wrap;justify-content:center}
+button,select{border:1px solid #615071;background:#241a36;color:var(--fg);border-radius:10px;padding:10px 13px;min-height:42px;font:600 13px system-ui,sans-serif;cursor:pointer}
+button:hover,button:focus-visible{border-color:#d09cff}
+button[aria-pressed="true"]{background:#663b8c;border-color:#db9fff;box-shadow:0 0 0 1px #a474c3}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:20px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.meta h2{margin:0;font-size:22px}.meta p{margin:0;color:#b8a2c8}.hint{text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:620px){.meta{display:block;text-align:center}.meta h2{font-size:20px}.panel{padding:12px}.row{gap:6px}button,select{font-size:12px;padding:9px 10px}}
+</style>
+</head>
+<body>
+<header><a href="./">← Voltar ao jogo</a><h1>Galeria dos sete chefes</h1>
+<p>Prévia interativa dos gráficos procedurais da versão 2.9, usando o próprio código do jogo. Troque o chefe, a fase e a qualidade gráfica.</p></header>
+<main class="wrap">
+<div class="stage">
+<canvas id="preview" width="1280" height="900" aria-label="Prévia animada do chefe selecionado"></canvas>
+<div class="panel">
+<div class="meta"><div><h2 id="bossName">—</h2><p id="bossSub">—</p></div>
+<label for="quality">Qualidade: <select id="quality" aria-label="Qualidade gráfica"><option value="high">Alta</option><option value="medium">Média</option><option value="low">Baixa</option></select></label></div>
+<div class="row" id="bossButtons" aria-label="Escolha o chefe"></div>
+<div class="row"><button type="button" id="phase1" aria-pressed="true">Fase I</button><button type="button" id="phase2" aria-pressed="false">Fase II</button><button type="button" id="pause" aria-pressed="false">Pausar animação</button></div>
+<div class="hint">Esta galeria mostra apenas os gráficos. Combate, hitboxes e progressão continuam disponíveis no jogo principal.</div>
+</div></div>
+</main>
+<script>
+const Camera={x:0};
+const GameSettings={quality:'high'};
+const Player={x:360,y:760,width:30,height:46,vx:0,vy:0,abilities:{_confused:false},hurtBox:{x:360,y:760,width:30,height:46},invincible:true};
+const BossHUD={_displayPct:1};
+</script>
+<script src="js/entities/bossSystem.js?v=2.9"></script>
+<script src="js/entities/bossVisuals.js?v=2.9"></script>
+<script>
+'use strict';
+const canvas=document.getElementById('preview'),ctx=canvas.getContext('2d');
+const ids=['saci','mula','curupira','caipora','ancestral','boitata','cuca'];
+const labels=['Saci','Mula sem Cabeça','Curupira','Caipora','Entidade Ancestral','Boitatá','Cuca'];
+const buttons=document.getElementById('bossButtons');
+let activeId='saci',phase=1,paused=false,last=0;
+for(let i=0;i<ids.length;i++){
+  const btn=document.createElement('button');
+  btn.type='button';btn.textContent=labels[i];btn.dataset.id=ids[i];
+  btn.addEventListener('click',()=>selectBoss(ids[i]));
+  buttons.append(btn);
+}
+function setPhase(value){
+  phase=value;BossSystem.boss.phase=value;
+  BossSystem.boss.visualPhasePulse=1;
+  document.getElementById('phase1').setAttribute('aria-pressed',String(value===1));
+  document.getElementById('phase2').setAttribute('aria-pressed',String(value===2));
+}
+function selectBoss(id){
+  activeId=id;BossSystem.boss=createBoss(id);
+  BossSystem.active=true;BossSystem.introActive=false;BossSystem.defeatActive=false;
+  BossSystem.boss.onGround=true;
+  document.getElementById('bossName').textContent=BossSystem.boss.displayName;
+  document.getElementById('bossSub').textContent=BossSystem.boss.subtitle;
+  for(const btn of buttons.children)btn.setAttribute('aria-pressed',String(btn.dataset.id===id));
+  setPhase(phase);
+}
+document.getElementById('phase1').addEventListener('click',()=>setPhase(1));
+document.getElementById('phase2').addEventListener('click',()=>setPhase(2));
+document.getElementById('quality').addEventListener('change',e=>GameSettings.quality=e.target.value);
+document.getElementById('pause').addEventListener('click',()=>{
+  paused=!paused;
+  document.getElementById('pause').textContent=paused?'Retomar animação':'Pausar animação';
+  document.getElementById('pause').setAttribute('aria-pressed',String(paused));
+});
+function drawBackground(b,t){
+  const sky=ctx.createLinearGradient(0,0,0,900);
+  sky.addColorStop(0,'#151025');sky.addColorStop(.72,'#1e132b');sky.addColorStop(1,'#09060e');
+  ctx.fillStyle=sky;ctx.fillRect(0,0,1280,900);
+  ctx.save();ctx.globalAlpha=.17;
+  ctx.fillStyle=b.nameColor;
+  ctx.beginPath();ctx.ellipse(640,340,260+Math.sin(t)*18,190,0,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+  ctx.fillStyle='#171020';ctx.fillRect(0,820,1280,80);
+  ctx.fillStyle='#33263b';ctx.fillRect(0,813,1280,9);
+  ctx.strokeStyle='#46344e';ctx.lineWidth=1;
+  for(let x=0;x<1280;x+=80){ctx.beginPath();ctx.moveTo(x,822);ctx.lineTo(x+12,900);ctx.stroke()}
+}
+function tick(b,dt){
+  BossVisuals.update(dt);
+  b._stateTimer=(b._stateTimer||0)+dt;
+  b._spinAngle=(b._spinAngle||0)+dt*4;
+  b._footAngle=(b._footAngle||0)+dt*3;
+  b._tailAngle=(b._tailAngle||0)+dt*2;
+  b._runeAngle=(b._runeAngle||0)+dt*(phase===2?2.2:1.2);
+  b._pulseTime=(b._pulseTime||0)+dt*3;
+  b._angle=(b._angle||0)+dt*3;
+  b.visualPhasePulse=Math.max(0,(b.visualPhasePulse||0)-dt*.8);
+}
+function frame(ts){
+  const dt=Math.min(.04,Math.max(0,(ts-last)/1000 || 0));last=ts;
+  const b=BossSystem.boss;
+  if(b){
+    if(!paused)tick(b,dt);
+    Camera.x=b.x+b.width/2-640;
+    drawBackground(b,BossVisuals.time);
+    BossSystem.draw(ctx);
+  }
+  requestAnimationFrame(frame);
+}
+selectBoss(activeId);requestAnimationFrame(frame);
+</script>
+</body>
+</html>

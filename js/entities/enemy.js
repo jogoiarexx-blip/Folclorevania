@@ -22,7 +22,7 @@ function createEnemy(x, y, regionId, spawnIndex=0) {
     recoveryDuration: kind==='brutamontes' ? 1.8 : kind==='saltador' ? 1.1 : 1.45,
     leapCooldown:0,
     attackTimer:0, invincible:false, invincibleTimer:0, knockbackTimer:0,
-    _pt:0, aiState:'patrol', aiCooldown:0, windupTimer:0, _attackDir:1,
+    _pt:0, _animTime:spawnIndex*.83, aiState:'patrol', aiCooldown:0, windupTimer:0, _attackDir:1,
     hitBox:null, _hitSpec:null,
     hurtBox:{ x, y, width:34, height:36 },
 
@@ -87,6 +87,7 @@ function createEnemy(x, y, regionId, spawnIndex=0) {
 
     update(dt, region, player) {
       if (this.health <= 0) return;
+      this._animTime+=dt;
       this.updateAI(dt, player);
       resolvePhysics(this, region);
       this.updateHurtBox();
@@ -140,7 +141,30 @@ function createEnemy(x, y, regionId, spawnIndex=0) {
         ctx.moveTo(sx+5,sy+8);ctx.lineTo(sx+11,sy-10);ctx.lineTo(sx+17,sy+7);
         ctx.moveTo(sx+17,sy+7);ctx.lineTo(sx+24,sy-13);ctx.lineTo(sx+29,sy+8);ctx.fill();
       }
-      if(windup){ctx.strokeStyle='#fff1be';ctx.globalAlpha=.45+.25*Math.sin((typeof MapSystem!=='undefined'?MapSystem._time:0)*18);ctx.lineWidth=2;ctx.beginPath();ctx.arc(sx+w/2,sy+h/2,w*.68,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}
+      // Marcha procedural em defasagem por criatura; sem assets externos.
+      const gait=windup?0:Math.min(1,Math.abs(this.vx)/Math.max(.2,this.speed));
+      const step=Math.sin(this._animTime*(this.kind==='saltador'?16:this.kind==='brutamontes'?7:11));
+      ctx.strokeStyle=dark;ctx.lineWidth=this.kind==='brutamontes'?6:4;
+      ctx.lineCap='round';ctx.beginPath();
+      ctx.moveTo(sx+w*.30,sy+h*.78);
+      ctx.lineTo(sx+w*.27+step*6*gait,sy+h+3);
+      ctx.moveTo(sx+w*.72,sy+h*.78);
+      ctx.lineTo(sx+w*.72-step*6*gait,sy+h+3);
+      ctx.stroke();
+      if(this.kind==='saltador'&&!this.onGround){
+        ctx.strokeStyle='#e9dbff';ctx.lineWidth=1.6;ctx.globalAlpha=.6;
+        ctx.beginPath();ctx.moveTo(sx+w*.14,sy+h-4);
+        ctx.lineTo(sx+w*.25,sy+h-13);ctx.moveTo(sx+w*.84,sy+h-4);
+        ctx.lineTo(sx+w*.72,sy+h-13);ctx.stroke();ctx.globalAlpha=1;
+      }
+      if(windup){
+        const ready=1-Math.max(0,Math.min(1,this.windupTimer/this.windupDuration));
+        ctx.strokeStyle='#fff1be';ctx.globalAlpha=.40+.50*ready;ctx.lineWidth=2+ready*2;
+        ctx.beginPath();ctx.arc(sx+w/2,sy+h/2,w*(.58+ready*.15),0,Math.PI*2);ctx.stroke();
+        ctx.beginPath();ctx.moveTo(sx+w/2+this._attackDir*10,sy+h*.62);
+        ctx.lineTo(sx+w/2+this._attackDir*(24+25*ready),sy+h*.62);
+        ctx.stroke();ctx.globalAlpha=1;
+      }
       // olhos
       const eye=kb?'#fff':(atk||windup)?'#fff1be':glow;ctx.fillStyle=eye;ctx.shadowColor=eye;ctx.shadowBlur=chase?9:5;ctx.beginPath();ctx.arc(sx+w*.31,sy+h*.38+bob,2.7,0,Math.PI*2);ctx.arc(sx+w*.69,sy+h*.38+bob,2.7,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
       // HP só aparece quando ferido

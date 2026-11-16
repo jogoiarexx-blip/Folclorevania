@@ -7,7 +7,7 @@ const BossSystem = {
   active:false, boss:null,
   introTimer:0, introActive:false,
   defeatTimer:0, defeatActive:false,
-  onDefeated:null, roomTiles:[],
+  onDefeated:null, roomTiles:[], phaseNoticeTimer:0,
 
   start(bossId, roomTiles, onDefeated) {
     this.boss         = createBoss(bossId);
@@ -18,10 +18,13 @@ const BossSystem = {
     this.defeatActive = false;
     this.defeatTimer  = 0;
     this.onDefeated   = onDefeated;
+    this.phaseNoticeTimer = 0;
+    if (typeof BossHUD !== 'undefined') BossHUD._displayPct = 1;
   },
 
   update(dt) {
     if (!this.active) return;
+    this.phaseNoticeTimer = Math.max(0, this.phaseNoticeTimer - dt);
     if (this.introActive) {
       this.introTimer -= dt;
       this.boss.introUpdate(dt);
@@ -117,15 +120,17 @@ function bossBase(cfg) {
     },
 
     takeDamage(n, srcX) {
-      if (this.invincible) return;
-      this.health -= n;
+      if (this.invincible || this.health<=0 || !Number.isFinite(n) || n<=0) return;
+      this.health = Math.max(0, this.health - n);
       this.invincible=true; this.invincibleTimer=0.25;
       const dir = srcX < this.x ? 1 : -1;
       this.vx=dir*3; this.vy=-2;
       Particles.impact(this.x+this.width/2, this.y+this.height/2, dir);
       if (typeof triggerScreenShake === 'function') triggerScreenShake(3.5, 0.11);
-      if (this.phase===1 && this.health/this.maxHealth <= this.phaseThreshold) {
+      if (this.health>0 && this.phase===1 && this.health/this.maxHealth<=this.phaseThreshold) {
         this.phase=2; this.onPhase2();
+        BossSystem.phaseNoticeTimer=2.0;
+        if(typeof triggerScreenShake==='function')triggerScreenShake(5,.25);
       }
     },
 
@@ -157,11 +162,16 @@ class BossSaci {
     this._teleportTimer=2.0;
     this._windBalls=[];
     this._spinAngle=0;
+    this._phaseOneCycle=0;
+    this._attackDir=1;
   }
 
   introUpdate(dt) { this._introAnim+=dt; this.y=700+Math.sin(this._introAnim*4)*12; }
 
-  onPhase2() { this._teleport(); Particles.special(this.x, this.y); }
+  onPhase2() {
+    this._aiState='idle'; this.clearHit(); this.vx=0;
+    this._teleport(); Particles.special(this.x, this.y);
+  }
 
   _teleport() {
     const positions=[150,350,550,750,1000,1200];
@@ -185,20 +195,28 @@ class BossSaci {
     const dx=player.x-this.x, dist=Math.abs(dx);
 
     if (this.phase===1) {
-      if (this._aiState==='idle' && this.attackCooldown<=0) {
-        this.vx=Math.sign(dx)*4.5; this._aiState='dash';
-        this.attackCooldown=1.8; this._stateTimer=0;
-      }
-      if (this._aiState==='dash') {
-        if (this._stateTimer>0.6) this.vx*=0.7;
-        if (this._stateTimer>1.0) { this.vx=0; this._aiState='idle'; }
+      if(this._aiState==='idle' && this.attackCooldown<=0){
+        // Alterna duas ofensivas reais: investida e rajada de vento.
+        // Ambas têm uma janela de aviso antes da hitbox ficar perigosa.
+        this._attackDir=Math.sign(dx)||1;
+        this._aiState=(this._phaseOneCycle++%2===0||dist>440)?'windupDash':'windupWind';
+        this._stateTimer=0; this.vx=0; this.clearHit();
+      } else if(this._aiState==='windupDash' && this._stateTimer>=.44){
+        this._aiState='dash'; this._stateTimer=0;
+        this.vx=this._attackDir*(this.phase===2?6:4.5);
         this.setHit(0,8,this.width,this.height-16);
-      } else {
-        this.clearHit();
-      }
-      if (this._aiState==='idle' && this.attackCooldown<=0 && dist<350) {
-        this._shootWind(Math.sign(dx)||1);
-        this.attackCooldown=2.0;
+        this.attackCooldown=1.7;
+      } else if(this._aiState==='windupWind' && this._stateTimer>=.48){
+        this._shootWind(this._attackDir);
+        this._aiState='idle'; this._stateTimer=0;
+        this.attackCooldown=1.55;
+      } else if(this._aiState==='dash'){
+        if(this._stateTimer>.6) this.vx*=.7;
+        if(this._stateTimer>1.0){
+          this.vx=0;this._aiState='idle';this.clearHit();
+        } else {
+          this.setHit(0,8,this.width,this.height-16);
+        }
       }
     }
 
@@ -234,6 +252,19 @@ class BossSaci {
     const ph2=this.phase===2;
     ctx.save();
     if (this.invincible) ctx.globalAlpha=(Math.floor(Date.now()/60)%2===0)?0.2:1;
+    // Previsão da direção da investida ou da rajada (antes do impacto).
+    if(this.phase===1 && (this._aiState==='windupDash'||this._aiState==='windupWind')){
+      const pct=Math.min(1,this._stateTimer/(this._aiState==='windupDash'?.44:.48));
+      ctx.save();
+      ctx.strokeStyle=this._aiState==='windupDash'?'#eaff9a':'#75ffc8';
+      ctx.lineWidth=2+2*pct;ctx.globalAlpha=.3+.55*pct;
+      ctx.setLineDash([8,6]);ctx.beginPath();
+      ctx.moveTo(sx+w/2,sy+h*.62);
+      ctx.lineTo(sx+w/2+this._attackDir*(this._aiState==='windupDash'?175:240),sy+h*.62);
+      ctx.stroke();ctx.setLineDash([]);
+      ctx.beginPath();ctx.arc(sx+w/2,sy+h/2,20+pct*15,0,Math.PI*2);ctx.stroke();
+      ctx.restore();
+    }
     // chapéu
     ctx.save(); ctx.translate(sx+w/2, sy); ctx.rotate(this._spinAngle*(ph2?1.5:0.5));
     ctx.fillStyle=ph2?'#ff2222':'#cc1111';
@@ -286,6 +317,7 @@ class BossMula {
       maxHealth:24, phaseThreshold:0.45, gravity:0.55,
     }));
     this._aiState='idle'; this._facing=1; this._flames=[]; this._stomps=0;
+    this._flameClock=0;
   }
 
   introUpdate(dt) { this._introAnim+=dt; this.x=200+Math.sin(this._introAnim*8)*6; }
@@ -317,23 +349,40 @@ class BossMula {
 
   update(dt, region, player) {
     this.tickTimers(dt);
-    this._emitFlame();
+    // Antes: 2 a 4 partículas por frame (~120-240/s). Agora emissão temporal
+    // (~24-80/s), estável em taxas de quadros diferentes.
+    this._flameClock+=dt;
+    const interval=this.phase===2?.05:.09;
+    if(this._flameClock>=interval){
+      this._flameClock%=interval;
+      this._emitFlame();
+    }
     switch(this._aiState) {
       case 'idle':
         this.vx*=0.85;
         if (this.attackCooldown<=0) {
-          if (this._stomps<2) { this._aiState='stomp'; this._stateTimer=0; this._stomps++; }
-          else { this._startCharge(player); this._stomps=0; }
+          if (this._stomps<2) {
+            this._aiState='stomp'; this._stateTimer=0; this._stomps++;
+            this.vy=-7; // apenas um impulso por salto
+          } else {
+            this._aiState='chargeWindup'; this._stateTimer=0;
+            this._facing=Math.sign(player.x-this.x)||1;
+            this.vx=0; this.clearHit(); this._stomps=0;
+          }
         }
         break;
       case 'stomp':
-        if (this._stateTimer<0.3) this.vy=-7;
         if (this.onGround && this._stateTimer>0.3) {
           for(let i=0;i<10;i++) Particles.impact(this.x+Math.random()*this.width,this.y+this.height,i%2===0?1:-1);
           this.setHit(-20,this.height-10,this.width+40,12);
           this.attackTimer=0.2; this.attackCooldown=this.phase===2?0.8:1.4;
           this._aiState='idle';
         }
+        break;
+      case 'chargeWindup':
+        this.vx=0;
+        if(this._stateTimer >= (this.phase===2?.38:.56))
+          this._startCharge(player);
         break;
       case 'charge':
         this.vx=this._facing*(this.phase===2?8.5:6);
@@ -365,6 +414,17 @@ class BossMula {
     const sx=this.x-Camera.x, sy=this.y, w=this.width, h=this.height;
     const charging=this._aiState==='charge', ph2=this.phase===2;
     ctx.save();
+    if(this._aiState==='chargeWindup'){
+      const duration=ph2?.38:.56;
+      const pct=Math.min(1,this._stateTimer/duration);
+      ctx.save();ctx.strokeStyle='#ffa44c';ctx.lineWidth=3;ctx.globalAlpha=.3+.6*pct;
+      ctx.setLineDash([10,7]);ctx.beginPath();
+      ctx.moveTo(sx+w/2,sy+h-7);
+      ctx.lineTo(sx+w/2+this._facing*270,sy+h-7);
+      ctx.stroke();ctx.setLineDash([]);
+      ctx.fillStyle='rgba(255,129,25,.2)';ctx.fillRect(sx-8,sy-8,w+16,h+16);
+      ctx.restore();
+    }
     if (this.invincible && !charging) ctx.globalAlpha=(Math.floor(Date.now()/60)%2===0)?0.2:1;
     // chamas
     for(const f of this._flames){

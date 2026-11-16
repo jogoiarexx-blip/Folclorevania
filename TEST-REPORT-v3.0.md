@@ -21,3 +21,9 @@
 
 ## Limitações reais
 Não houve browser E2E, screenshot de resultado visual do jogo, avaliação de legibilidade no celular, teste gráfico em GPU, medição de FPS ou QA completo das oito regiões. Os resultados descritos são simulações de execução, não homologação visual. Próxima etapa é testar jogo e galeria em navegador real e fazer ajustes de proporção/cores conforme as imagens.
+
+## Verificações complementares antes da publicação
+- Sintaxe de **23/23 arquivos JavaScript** da branch (incluindo dois testes) aprovada.
+- **6 testes adicionais de integração** usando os módulos reais Player, Enemy e EntityArt com física/entrada/partículas simuladas: execução de 90 frames de atualizações, dano do herói e flash temporário, XP único no abate, eco visual único e reset visual sem alterar HP.
+- Dependências da página: os 21 scripts no `index.html` e o script externo da galeria correspondem a arquivos existentes da branch; 2 trechos JavaScript inline da galeria tiveram sintaxe aprovada.
+- **Ainda não foram executados testes reais de navegador ou métricas de FPS.**

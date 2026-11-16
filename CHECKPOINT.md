@@ -1,3 +1,25 @@
+## v2.7 — Variedade de inimigos, combate e usabilidade (2026-11-16)
+
+**Escopo concluído em código**
+- Reestruturado `createEnemy` com três arquétipos determinísticos por posição de spawn: **espreitador** (patrulha e perseguição), **brutamontes** (mais vida, menor velocidade, ataque lento e anunciado, até 2 de dano em regiões avançadas) e **saltador** (movimentação mais rápida e salto de perseguição com cooldown).
+- As classes possuem silhuetas reconhecíveis desenhadas em canvas, sem adicionar texturas, sprites ou downloads.
+- XP escalonado por tipo: padrão x1, saltador x1,2 e brutamontes x1,5; recompensa concedida uma vez por morte.
+- Inimigos mortos saem da lista de atualização. Ao trocar de região, o conjunto é recriado de forma limpa e previsível; descansar continua recriando na região atual.
+- Na versão mobile, um botão de **descansar** aparece apenas perto da fogueira, ligado ao mesmo comando `KeyE` já processado pelo sistema de input. Alterações CSS controladas para evitar piscar a cada frame.
+- O carregamento descarta efeitos transitórios (confusão do Curupira), limpa hitboxes e temporizadores, mas mantém habilidades conquistadas.
+- Ao derrotar um chefe, a confusão é removida.
+- Corrigido conflito entre imunidade de dash/investida e a imunidade temporária de dano.
+- Árvore não abre por cima de menu de save, opções, créditos finais ou loading.
+- Descansar protege por ~1s contra os inimigos que acabaram de reaparecer; estado é revertido se falhar a gravação.
+
+**Arquivos:** `js/entities/enemy.js`, `js/entities/player.js`, `js/main.js`, `js/systems/skillTree.js`, `js/systems/saveSystem.js`, `js/systems/campfireSystem.js`, `index.html`, `css/style.css`, `CHECKPOINT.md`, `README-v2.7.md`, `TEST-REPORT-v2.7.md`.
+
+**Testes:** sintaxe dos 19 módulos JS aprovada e 22 asserções de simulação de inimigos, XP, reentrada, touch, save e interface; mais 10 verificações de descanso, invulnerabilidade e rollback de gravação. Parte desses testes valida chamadas e padrões em código; detalhes em `TEST-REPORT-v2.7.md`. Não foi realizado teste visual ou partida completa no browser.
+
+**Pendências:** validar de ponta a ponta 8 regiões, 7 chefes, touch em Android/iOS, equilíbrio dos três arquétipos, pontos de spawn em plataformas e save/restore entre dispositivos. Não foi introduzido backend nem salvamento em nuvem.
+
+---
+
 # Folclorevania — checkpoint de desenvolvimento
 
 ## v2.6.1 — Correção de descanso e reaparecimento de inimigos (2026-11-16)

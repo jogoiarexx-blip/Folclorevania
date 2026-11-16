@@ -54,6 +54,43 @@ const SaveSystem = {
     }
   },
 
+  // Descansar e salvar: restaura vida/energia e repõe os inimigos da região.
+  // O save normal (compra de talento, derrota de chefe) permanece sem descanso.
+  // Reverte as alterações em memória se a gravação falhar.
+  saveRested(slotIndex, { campfireRegionId = null } = {}) {
+    if (!Number.isInteger(slotIndex) || slotIndex < 0 || slotIndex >= NUM_SLOTS ||
+        !GameState.started || GameState.playerDead || Player.health <= 0 ||
+        GameState.bossMode || (typeof Transition !== 'undefined' && Transition.active)) return false;
+
+    const region = Regions[GameState.currentRegionId];
+    if (!region || !Array.isArray(region.enemies)) return false;
+    const fire = campfireRegionId === null ? null :
+      CampfireSystem.campfires.find(c => c.regionId === campfireRegionId && c.regionId === GameState.currentRegionId);
+    if (campfireRegionId !== null && !fire) return false;
+
+    const previous = {
+      health: Player.health, stamina: Player.stamina,
+      enemies: region.enemies, fireLit: fire ? fire.lit : false,
+    };
+
+    try {
+      Player.health = Player.maxHealth;
+      Player.stamina = 100;
+      // spawnEnemies substitui a lista inteira: sem duplicar inimigos antigos.
+      spawnEnemies(region);
+      if (fire) fire.lit = true;
+      if (this.save(slotIndex)) return true;
+    } catch (error) {
+      console.error('Erro ao descansar e salvar:', error);
+    }
+
+    Player.health = previous.health;
+    Player.stamina = previous.stamina;
+    region.enemies = previous.enemies;
+    if (fire) fire.lit = previous.fireLit;
+    return false;
+  },
+
   // ── Carrega um slot e aplica ao estado do jogo ────────────
   load(slotIndex) {
     const slots  = this.loadAll();
@@ -285,11 +322,12 @@ const SaveScreen = {
 
 // ── Salvar em jogo (tecla F5 / botão no HUD) ─────────────
 function quickSavePrompt() {
-  if (!GameState.started || GameState.bossMode) return;
+  if (!GameState.started || GameState.bossMode || GameState.playerDead ||
+      (typeof Transition !== 'undefined' && Transition.active)) return;
   SaveScreen.open('save', (slotIndex) => {
-    const ok = SaveSystem.save(slotIndex);
+    const ok = SaveSystem.saveRested(slotIndex);
     if (ok) GameState._activeSlot = slotIndex;
-    showSaveFeedback(ok ? '✅ Jogo salvo!' : '❌ Erro ao salvar');
+    showSaveFeedback(ok ? '💚 Descanso completo! Vida cheia e inimigos renovados.' : '❌ Erro ao descansar e salvar');
   });
 }
 

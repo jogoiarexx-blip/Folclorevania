@@ -221,7 +221,7 @@ const EntityArt = {
     if(e.onGround)this.oval(ctx,sx,sy+2,22,4,'rgba(0,0,0,.4)');
     ctx.translate(sx,sy+bob);ctx.scale(e.kind==='brutamontes'?1.37:e.kind==='saltador'?1.24:1.2,
       e.kind==='brutamontes'?1.34:1.22);
-    const face=e._attackDir||((e.vx||0)>=0?1:-1);
+    const face=(windup || e.attackTimer>0) ? (e._attackDir||1) : ((e.vx||0)>=0?1:-1);
     if(flinch)ctx.globalAlpha=.78;
     if(e.kind==='espreitador'){
       // Predador da mata: quatro patas, mandibula comprida e espinhos.

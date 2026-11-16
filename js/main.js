@@ -551,10 +551,17 @@ function update(dt) {
     checkDoors();
 
     const cfResult = CampfireSystem.update(dt, GameState.currentRegionId, Player);
-    if (cfResult === 'save' && GameState._activeSlot !== undefined) {
-      CampfireSystem.lightInRegion(GameState.currentRegionId);
-      SaveSystem.save(GameState._activeSlot);
-      showSaveFeedback('🔥 Jogo salvo na fogueira!');
+    if (cfResult === 'save' && !GameState.playerDead && Player.health > 0 && !Transition.active) {
+      const campfireRegionId = GameState.currentRegionId;
+      const saveAtFire = (slotIndex) => {
+        const ok = SaveSystem.saveRested(slotIndex, { campfireRegionId });
+        if (ok) GameState._activeSlot = slotIndex;
+        showSaveFeedback(ok
+          ? '🔥 Descansou: vida cheia e inimigos renovados!'
+          : '❌ Não foi possível descansar e salvar');
+      };
+      if (Number.isInteger(GameState._activeSlot)) saveAtFire(GameState._activeSlot);
+      else SaveScreen.open('save', saveAtFire);
     }
   }
 

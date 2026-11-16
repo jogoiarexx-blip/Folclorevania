@@ -41,6 +41,7 @@ const BossVisuals = {
   drawBack(ctx,b){
     if(!b || b.health<=0)return;
     const x=b.x-Camera.x,y=b.y,w=b.width,h=b.height;
+    if(x+w < -110 || x > ctx.canvas.width+110)return; // cull offscreen
     const t=this.time,phase=b.phase===2;
     const cx=x+w/2,cy=y+h/2;
     ctx.save();
@@ -119,6 +120,7 @@ const BossVisuals = {
   drawFront(ctx,b){
     if(!b || b.health<=0)return;
     const x=b.x-Camera.x,y=b.y,w=b.width,h=b.height;
+    if(x+w < -110 || x > ctx.canvas.width+110)return;
     const cx=x+w/2,cy=y+h/2,t=this.time,phase=b.phase===2;
     ctx.save();
     switch(b.id){

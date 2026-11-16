@@ -7,7 +7,7 @@
 ## Estado implementado
 - Árvore de habilidades independente dos poderes concedidos pelos chefes.
 - 3 especializações: Guerreiro, Guardião e Místico.
-- 12 talentos com 27 níveis de investimento no total, pré-requisitos e pontos limitados.
+- 12 talentos com 26 níveis de investimento no total, pré-requisitos e pontos limitados.
 - Experiência concedida por inimigos comuns (com escalonamento por região) e chefes.
 - Cada nível concede 1 ponto; cada chefe derrotado pela primeira vez concede 2 pontos.
 - Talentos aplicados a dano, críticos, alcance, execução, vida, energia, invulnerabilidade, cura, dash e especial.

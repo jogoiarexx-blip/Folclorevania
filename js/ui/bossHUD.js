@@ -21,6 +21,24 @@ const BossHUD = {
     ctx.strokeStyle='rgba(255,255,255,.11)';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(bx,by,bw,bh,7);ctx.stroke();
     ctx.strokeStyle='rgba(255,255,255,.18)';ctx.beginPath();ctx.moveTo(bx+bw*.5,by+2);ctx.lineTo(bx+bw*.5,by+bh-2);ctx.stroke();
     ctx.textAlign='center';ctx.font='8px monospace';ctx.fillStyle='#736979';ctx.fillText(`${Math.max(0,boss.health)} / ${boss.maxHealth}`,W/2,by+27);
+    // Anúncio curto e visível quando a luta evolui para a segunda fase.
+    if(BossSystem.phaseNoticeTimer>0 && boss.health>0){
+      const remaining=BossSystem.phaseNoticeTimer;
+      const alpha=Math.min(1,remaining*2, (2-remaining)*4);
+      ctx.globalAlpha=Math.max(0,alpha);
+      const y=Math.round(H*.20);
+      const pw=Math.min(W*.58,520);
+      const g=ctx.createLinearGradient(W/2-pw/2,y,W/2+pw/2,y);
+      g.addColorStop(0,'rgba(40,7,20,0)');
+      g.addColorStop(.5,'rgba(55,9,33,.88)');
+      g.addColorStop(1,'rgba(40,7,20,0)');
+      ctx.fillStyle=g;ctx.fillRect(W/2-pw/2,y-22,pw,62);
+      ctx.textAlign='center';ctx.font='bold 20px monospace';
+      ctx.fillStyle='#ffb2c8';ctx.shadowColor='#ff416c';ctx.shadowBlur=12;
+      ctx.fillText('FASE II — FÚRIA DESPERTA',W/2,y+4);
+      ctx.shadowBlur=0;ctx.fillStyle='#e1b4d1';ctx.font='11px monospace';
+      ctx.fillText(boss.displayName+' mudou de estratégia!',W/2,y+27);
+    }
     ctx.restore();
   },
 };

@@ -24,6 +24,7 @@ const BossSystem = {
 
   update(dt) {
     if (!this.active) return;
+    if (typeof BossVisuals !== 'undefined') BossVisuals.update(dt);
     this.phaseNoticeTimer = Math.max(0, this.phaseNoticeTimer - dt);
     if (this.introActive) {
       this.introTimer -= dt;
@@ -52,8 +53,11 @@ const BossSystem = {
   },
 
   draw(ctx) {
-    if (!this.active) return;
+    if (!this.active || !this.boss) return;
+    // Camadas decorativas isoladas da física e do sistema de ataque.
+    if (typeof BossVisuals !== 'undefined') BossVisuals.drawBack(ctx, this.boss);
     this.boss.draw(ctx);
+    if (typeof BossVisuals !== 'undefined') BossVisuals.drawFront(ctx, this.boss);
     if (this.introActive) this._drawIntro(ctx);
   },
 
@@ -100,6 +104,7 @@ function bossBase(cfg) {
     hitBox:null, _hitSpec:null,
     hurtBox:{ x:cfg.x, y:cfg.y, width:cfg.width||60, height:cfg.height||80 },
     _stateTimer:0, _defeatTimer:0, _introAnim:0,
+    visualHitTimer:0, visualPhasePulse:0,
 
     setHit(ox,oy,w,h){ this._hitSpec={ox,oy,w,h}; this.syncHitBox(); },
     syncHitBox(){ if(this._hitSpec){const h=this._hitSpec;this.hitBox={x:this.x+h.ox,y:this.y+h.oy,width:h.w,height:h.h};} },
@@ -109,6 +114,8 @@ function bossBase(cfg) {
     // BUG 3 FIX: tickTimers NÃO checa hitbox do player — isso é feito
     // no player.update para evitar dupla detecção. Só checa hitbox do boss → player.
     tickTimers(dt) {
+      this.visualHitTimer=Math.max(0,this.visualHitTimer-dt);
+      this.visualPhasePulse=Math.max(0,this.visualPhasePulse-dt*.8);
       this.updateHurtBox();
       if (this.invincibleTimer>0){ this.invincibleTimer-=dt; if(this.invincibleTimer<=0) this.invincible=false; }
       if (this.attackTimer>0)    { this.attackTimer-=dt;    if(this.attackTimer<=0)     this.clearHit(); }
@@ -122,6 +129,7 @@ function bossBase(cfg) {
     takeDamage(n, srcX) {
       if (this.invincible || this.health<=0 || !Number.isFinite(n) || n<=0) return;
       this.health = Math.max(0, this.health - n);
+      this.visualHitTimer=.20;
       this.invincible=true; this.invincibleTimer=0.25;
       const dir = srcX < this.x ? 1 : -1;
       this.vx=dir*3; this.vy=-2;
@@ -129,6 +137,7 @@ function bossBase(cfg) {
       if (typeof triggerScreenShake === 'function') triggerScreenShake(3.5, 0.11);
       if (this.health>0 && this.phase===1 && this.health/this.maxHealth<=this.phaseThreshold) {
         this.phase=2; this.onPhase2();
+        this.visualPhasePulse=1;
         BossSystem.phaseNoticeTimer=2.0;
         if(typeof triggerScreenShake==='function')triggerScreenShake(5,.25);
       }

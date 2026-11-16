@@ -169,6 +169,7 @@ const SaveSystem = {
 
       Player.updateHurtBox();
       Input.clear();
+      if(typeof EntityArt!=='undefined') EntityArt.reset();
       Camera.x = 0;
       return true;
     } catch(e) {

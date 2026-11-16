@@ -82,9 +82,11 @@ const SkillTree = {
     if(levels && typeof showSaveFeedback==='function')
       showSaveFeedback('✨ Nível '+this.level+'! +'+levels+' ponto(s) ancestral(is). Abra com K');
   },
-  onEnemyDefeated(regionId){
+  onEnemyDefeated(regionId,kind='espreitador'){
     this.kills++;
-    this.gainXP(14+Math.max(0,Math.min(7,Number(regionId)||0))*7);
+    const base=14+Math.max(0,Math.min(7,Number(regionId)||0))*7;
+    const multiplier=kind==='brutamontes'?1.5:kind==='saltador'?1.2:1;
+    this.gainXP(Math.round(base*multiplier));
     if(this.bonus('recovery') && this.kills%5===0 && typeof Player!=='undefined')
       Player.health=Math.min(Player.maxHealth,Player.health+1);
   },

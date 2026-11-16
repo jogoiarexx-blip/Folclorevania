@@ -62,3 +62,62 @@ button:hover,button:focus-visible{transform:translateY(-1px);border-color:#c178f
 .stream-loading-kicker{font-size:9px;letter-spacing:.24em;color:#806d91;margin-bottom:10px}.stream-loading-title{font-family:Georgia,"Times New Roman",serif;font-size:24px;color:#e3cff5;margin-bottom:18px;text-shadow:0 0 18px rgba(184,101,255,.18)}
 .stream-loading-track{height:8px;border:1px solid rgba(187,118,244,.22);border-radius:999px;background:#0d0712;overflow:hidden}.stream-loading-bar{height:100%;width:0%;border-radius:inherit;background:linear-gradient(90deg,#632094,#c078ff);box-shadow:0 0 16px rgba(192,120,255,.45);transition:width .12s linear}
 .stream-loading-status{margin-top:9px;color:#a28bad;font-size:10px}.stream-loading-window{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.05);color:#675b70;font-size:9px;letter-spacing:.05em;line-height:1.6}
+
+
+/* ---------- V2.6 Árvore de habilidades ---------- */
+#skillQuickButton{position:fixed;right:16px;top:112px;z-index:72;min-height:40px;
+  padding:8px 14px;border:1px solid rgba(224,172,255,.5);border-radius:12px;color:#ffe4ff;
+  background:linear-gradient(135deg,rgba(91,27,131,.94),rgba(31,9,54,.95));box-shadow:0 6px 25px #0009}
+body.game-menu #skillQuickButton,body.game-paused #skillQuickButton{display:none}
+.skill-screen{position:fixed;inset:0;z-index:115;display:grid;place-items:center;padding:14px;
+  background:rgba(2,0,8,.91);backdrop-filter:blur(12px)}
+.skill-shell{width:min(1250px,96vw);max-height:94dvh;overflow:auto;touch-action:pan-y;overscroll-behavior:contain;
+  border:1px solid rgba(196,126,255,.36);border-radius:22px;
+  background:radial-gradient(circle at 50% -15%,rgba(110,46,163,.24),transparent 55%),linear-gradient(170deg,#14091f,#07030e 72%);
+  box-shadow:0 35px 100px #000b;padding:24px}
+.skill-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:20px}
+.skill-header h2{font-family:Georgia,"Times New Roman",serif;font-size:clamp(25px,3vw,38px);margin:0 0 8px}
+.skill-header p{font-size:11px;color:#a991bc;line-height:1.55;margin:0}
+.skill-close{flex:none;min-width:110px}
+.skill-progress{display:flex;align-items:center;gap:24px;padding:14px 20px;margin-bottom:18px;
+  border:1px solid rgba(190,122,255,.23);background:#160b22a8;border-radius:14px}
+.skill-level{font-size:10px;color:#a88cbf;white-space:nowrap}.skill-level strong{font-size:28px;color:#f2d6ff;margin-left:8px}
+.skill-xp-wrap{flex:1}.skill-xp-head{display:flex;justify-content:space-between;gap:12px;color:#967eac;font-size:10px;margin-bottom:8px}
+.skill-xp-track{width:100%;height:9px;border:1px solid #55316d;background:#09050f;border-radius:20px;overflow:hidden}
+#skillXpBar{height:100%;width:0;background:linear-gradient(90deg,#8c48d1,#e5afff);box-shadow:0 0 15px #ac67e9;transition:width .2s}
+.skill-points{display:flex;align-items:center;gap:9px;color:#a99ac1;font-size:9px;letter-spacing:.07em}
+.skill-points strong{font-size:30px;color:#ffe2a1}
+.skill-branches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.skill-branch{border:1px solid color-mix(in srgb,var(--branch-color) 35%,transparent);
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(0,0,0,.22));border-radius:16px;padding:16px;min-width:0}
+.skill-branch-head{display:flex;align-items:center;gap:12px;padding-bottom:14px;margin-bottom:14px;
+  border-bottom:1px solid rgba(255,255,255,.07)}
+.skill-branch-icon{display:grid;place-items:center;width:45px;height:45px;border-radius:13px;
+  background:color-mix(in srgb,var(--branch-color) 14%,transparent);border:1px solid color-mix(in srgb,var(--branch-color) 35%,transparent);font-size:23px}
+.skill-branch h3{color:var(--branch-color);font-size:16px;margin:0 0 4px}
+.skill-branch-head p{margin:0;color:#978ba4;font-size:9px}
+.skill-nodes{display:flex;flex-direction:column;gap:12px}
+.skill-node{position:relative;display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px;
+  background:rgba(5,3,12,.75);border:1px solid rgba(223,188,255,.12);border-radius:12px;min-height:108px}
+.skill-node:not(:last-child)::after{content:"";position:absolute;left:29px;top:100%;height:13px;border-left:2px dashed var(--branch-color);opacity:.45}
+.skill-node.locked{opacity:.58}
+.skill-node.maxed{border-color:color-mix(in srgb,var(--branch-color) 65%,transparent);background:rgba(110,82,130,.12)}
+.skill-node-icon{display:grid;place-items:center;width:36px;height:36px;flex:none;border-radius:10px;
+  background:rgba(255,255,255,.06);font-size:20px}
+.skill-node-body{flex:1;min-width:160px}
+.skill-node-title{font-size:11px;font-weight:800;color:#f5e5ff;margin-bottom:5px}
+.skill-node p{font-size:9px;line-height:1.4;color:#ac9bb6;margin:0 0 8px}
+.skill-ranks{display:flex;gap:5px}.skill-ranks i{display:block;width:21px;height:5px;border-radius:8px;background:#35263f}
+.skill-ranks i.filled{background:var(--branch-color);box-shadow:0 0 7px color-mix(in srgb,var(--branch-color) 50%,transparent)}
+.skill-node button{width:100%;min-height:32px;padding:8px;font-size:9px;border-radius:8px;
+  background:color-mix(in srgb,var(--branch-color) 18%,#16081e);border-color:color-mix(in srgb,var(--branch-color) 38%,transparent)}
+.skill-node button:disabled{opacity:.55;cursor:not-allowed;transform:none;box-shadow:none}
+.skill-footer{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07);
+  color:#91819d;font-size:10px;text-align:center;line-height:1.5}
+@media(max-width:1000px){.skill-branches{grid-template-columns:1fr}.skill-nodes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .skill-node:not(:last-child)::after{display:none}}
+@media(max-width:600px){.skill-shell{padding:16px;max-height:96dvh}.skill-header{align-items:center}
+  .skill-header p{font-size:10px}.skill-close{min-width:auto;padding:9px}.skill-progress{gap:10px;padding:12px}
+  .skill-level strong{font-size:20px;margin-left:3px}.skill-points strong{font-size:24px}
+  .skill-points span{font-size:8px}.skill-nodes{grid-template-columns:1fr}
+  .skill-node{min-height:98px}.skill-xp-head{font-size:8px}#skillQuickButton{right:10px;top:10px;font-size:10px}}

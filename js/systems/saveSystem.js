@@ -116,11 +116,23 @@ const SaveSystem = {
       Player.stamina      = Math.max(0, Math.min(100, Number(p.stamina) || 0));
       Player.x            = Number.isFinite(Number(p.x)) ? Math.max(region.bounds.left, Math.min(region.bounds.right - Player.width, Number(p.x))) : 80;
       Player.y            = Number.isFinite(Number(p.y)) ? Math.max(region.bounds.top, Math.min(region.bounds.bottom - Player.height, Number(p.y))) : 760;
-      Player.abilities    = { ...Player.abilities, ...(p.abilities && typeof p.abilities === 'object' ? p.abilities : {}) };
-      Player.vx = 0; Player.vy = 0;
-      Player.state = 'idle';
-      Player.invincible = false; Player.invincibleTimer = 0;
-      Player.hitBox = null;
+      const savedAbilities = p.abilities && typeof p.abilities === 'object' ? p.abilities : {};
+      Player.abilities = {
+        dash:true,
+        doubleJump:!!savedAbilities.doubleJump,
+        charge:!!savedAbilities.charge,
+        special:!!savedAbilities.special,
+        _confused:false, // Efeito temporário do Curupira nunca deve persistir.
+      };
+      Player.vx=0; Player.vy=0;
+      Player.state='idle';
+      Player.invincible=false; Player.invincibleTimer=0;
+      Player.dashTimer=0; Player.attackTimer=0; Player.chargeTimer=0;
+      Player.specialTimer=0; Player.specialCooldown=0; Player.knockbackTimer=0;
+      Player.coyoteTimer=0; Player.jumpBufferTimer=0; Player.jumpsLeft=0;
+      Player.onGround=false; Player.wasOnGround=false;
+      Player._wasOnGroundForJump=false;
+      Player.clearHit();
 
       // Relíquias — resetar e reaplicar
       Player.equippedRelics = [];

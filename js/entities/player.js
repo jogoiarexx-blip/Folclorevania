@@ -255,7 +255,7 @@ const Player = {
     // timers
     if (this.invincibleTimer > 0) {
       this.invincibleTimer -= dt;
-      if (this.invincibleTimer <= 0) { this.invincible = false; this.invincibleTimer = 0; }
+      if (this.invincibleTimer <= 0) { this.invincible = this.dashTimer > 0 || this.chargeTimer > 0; this.invincibleTimer = 0; }
     }
     if (this.knockbackTimer > 0) {
       this.knockbackTimer -= dt;
@@ -264,7 +264,7 @@ const Player = {
     if (this.dashTimer > 0) {
       this.dashTimer -= dt;
       if (this.dashTimer <= 0) {
-        this.dashTimer = 0; this.invincible = false;
+        this.dashTimer = 0; this.invincible = this.invincibleTimer > 0 || this.chargeTimer > 0;
         if (this.state === 'dash') this.state = this.onGround ? 'idle' : 'jump';
       }
     }
@@ -275,7 +275,7 @@ const Player = {
     if (this.chargeTimer > 0) {
       this.chargeTimer -= dt;
       if (this.chargeTimer <= 0) {
-        this.chargeTimer = 0; this.invincible = false; this.clearHit();
+        this.chargeTimer = 0; this.invincible = this.invincibleTimer > 0 || this.dashTimer > 0; this.clearHit();
         if (this.state === 'charge') this.state = this.onGround ? 'idle' : 'jump';
       }
     }

@@ -1,5 +1,32 @@
 # Folclorevania — checkpoint de desenvolvimento
 
+## v3.0 — Redesenho do herói e dos inimigos (2026-11-16)
+
+### Entregas de código
+- **Novo módulo `js/entities/entityArt.js`:** substitui o desenho visual original com fallback automático caso o módulo não esteja carregado. Não altera hitboxes nem mecânica de combate.
+- **Herói:** proporções e anatomia de aventureiro, rosto e chapéu reconhecíveis, roupa com camadas, ombreiras, botas segmentadas, braceletes, cachecol e espada com guarda/fio definidos. Ciclos procedurais de caminhada, capa ao vento, poses aéreas, investida, especial, arco luminoso na espada e flash ao receber dano.
+- **Inimigos:** três designs radicalmente diferentes; Espreitador com corpo de predador, focinho, orelhas e garras; Brutamontes com armadura de pedra, rachaduras, núcleo brilhante e braços maciços; Saltador com pernas longas, antenas e olhos grandes. Oito esquemas cromáticos mantêm o contexto dos biomas.
+- **Efeitos de combate:** fantasmas de dash/investida em uma fila limitada a 6; ecos de derrota limitados a 16 instâncias e desaparecendo em 0,58s; flash de dano e marcação de ataques com proporção do tempo de preparação.
+- `EntityArt.updatePlayer(dt)` e `EntityArt.update(dt)` usam o timestep fixo do jogo, respeitando pausa; draw não modifica estado de HP, posição nem progressão. Todos os efeitos temporários são resetados no novo jogo e ao carregar save.
+- **Galeria `entity-gallery.html`:** selecione ações do herói, tipo de inimigo, oito biomas e qualidades gráficas. Mostra os novos desenhos sem entrar em uma luta.
+- Mantidos todos os 7 chefes e sua camada gráfica 2.9; mantidos todos os 3 slots, dados salvos, 8 mapas, 12 talentos e IA da v2.8.
+
+### Arquivos de código
+`js/entities/entityArt.js` (novo); `js/entities/player.js`; `js/entities/enemy.js`; `js/main.js`; `js/systems/saveSystem.js`; `index.html`; `entity-gallery.html` (novo); `tests/entityArtSmoke.test.js`; `CHECKPOINT.md`, `README-v3.0.md`, `TEST-REPORT-v3.0.md`.
+
+### Testes e limites
+- 96 cenários de arte executados com renderer Canvas simulado: 8 estados do herói × 3 qualidades = 24, e 3 inimigos × 8 biomas × 3 qualidades = 72. Os desenhos não modificaram dados de física.
+- 35 verificações (incluindo sintaxe, limitação de efeitos, zero coordenadas inválidas e save/restore de contexto equilibrados). Execução do teste de smoke armazenado em `tests/entityArtSmoke.test.js` com mocks das primitivas de Node: PASS, 17.694 chamadas de Canvas.
+- Não há evidência de FPS em GPU real, testes visuais em navegador, teste de toque em iOS/Android ou screenshot de arte produzida. São pendências para QA real.
+- **Atenção:** esta versão entrega sprites vetoriais/procedurais Canvas, não imagens 3D, atlas externo ou assets pixel art pré-renderizados.
+
+### Próximas verificações
+1. Inspecionar a galeria e o jogo para validar proporções das silhuetas, posicionamento nas plataformas e visibilidade em telas menores.
+2. Comparar FPS no Android nas configurações baixa, média e alta.
+3. Testar a sequência completa de uma região (andar, salto, combate, fogueira, save/load, chefão).
+4. Só depois de capturas reais, balancear contraste e proporções de cada sprite.
+
+---
 ## v2.9 — Reconstrução gráfica procedural dos 7 chefes (2026-11-16)
 
 **Objetivo:** evoluir de fato os gráficos de todos os bosses, preservando IA, colisões, poderes desbloqueados, salvamentos e desempenho em dispositivos móveis.

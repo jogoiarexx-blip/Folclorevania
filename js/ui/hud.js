@@ -110,7 +110,7 @@ const HUD = {
       ctx.fillStyle=on?s.color:'#3b3540';ctx.font='bold 11px monospace';ctx.fillText(s.icon,x+6,cy+18);
       ctx.font='6px monospace';ctx.fillStyle=on?'#a89bac':'#443d47';ctx.fillText(s.label,x+20,cy+11);ctx.fillStyle=on?s.color+'aa':'#403843';ctx.fillText(s.keyName,x+20,cy+20);
     });
-    if(ab.special && Player.specialCooldown>0){const cd=Math.min(1,Player.specialCooldown/8);ctx.fillStyle='rgba(0,0,0,.50)';ctx.fillRect(W-93,y+8,57,27*cd);}
+    if(ab.special && Player.specialCooldown>0){const cd=Math.min(1,Player.specialCooldown/Math.max(2,8-SkillTree.bonus('specialCooldown')));ctx.fillStyle='rgba(0,0,0,.50)';ctx.fillRect(W-93,y+8,57,27*cd);}
   },
 
   drawRegionTitle(ctx,name) {

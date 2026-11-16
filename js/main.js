@@ -376,6 +376,8 @@ const BOSS_SPAWN_AFTER = {
 function onBossDefeated(bossId) {
   GameState.bossMode = false;
   GameState.currentRegionId = GameState.bossRegionId;
+  // Estados do Curupira devem desaparecer quando o chefe é derrotado.
+  Player.abilities._confused=false;
   if (!GameState.defeatedBosses.has(bossId)) {
     GameState.defeatedBosses.add(bossId);
     SkillTree.onBossDefeated(bossId);
@@ -454,7 +456,9 @@ function checkDoors() {
         Player.vx = 0; Player.vy = 0;
         Player.updateHurtBox();
         Camera.x = 0;
-        if (Regions[door.to].enemies.length === 0) spawnEnemies(Regions[door.to]);
+        // Renovar os encontros ao retornar, inclusive quando havia inimigos mortos
+        // misturados aos vivos. spawnEnemies substitui a lista inteira sem duplicatas.
+        spawnEnemies(Regions[door.to]);
         RegionStream.focus(door.to);
       }, { loadingText: `Abrindo ${REGION_ASSET_MANIFEST[door.to].name}` });
       return;
@@ -546,7 +550,11 @@ function update(dt) {
   if (GameState.bossMode) {
     BossSystem.update(dt);
   } else {
-    for (const e of Regions[GameState.currentRegionId].enemies) e.update(dt, region, Player);
+    const activeRegion=Regions[GameState.currentRegionId];
+    for (const e of activeRegion.enemies) e.update(dt, region, Player);
+    // Remover mortos do loop de IA e do desenho: recompensa de XP continua
+    // a ocorrer uma vez dentro de enemy.takeDamage.
+    activeRegion.enemies=activeRegion.enemies.filter(e=>e.health>0);
     tryEnterBossRoom();
     checkDoors();
 

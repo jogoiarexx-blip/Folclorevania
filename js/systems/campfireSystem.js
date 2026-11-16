@@ -55,6 +55,8 @@ const CampfireSystem = {
   update(dt, regionId, player) {
     this._time += dt;
     this._prompt = null;
+    const mobileInteract=document.getElementById('touchInteract');
+    if(mobileInteract) mobileInteract.classList.add('hidden');
 
     const cf = this.campfires.find(c => c.regionId === regionId);
     if (!cf) return;
@@ -68,6 +70,7 @@ const CampfireSystem = {
 
     if (dist < INTERACT_RANGE) {
       this._prompt = { cf };
+      if(mobileInteract) mobileInteract.classList.remove('hidden');
       // Pressiona E → solicita descanso. O main.js confirma o save
       // antes de marcar a fogueira como acesa.
       if (Input.jp('KeyE')) return 'save';

@@ -26,7 +26,8 @@ const SaveSystem = {
   save(slotIndex) {
     const slots = this.loadAll();
     slots[slotIndex] = {
-      version:        2,
+      version:        3,
+      skillTree:      SkillTree.serialize(),
       timestamp:      Date.now(),
       regionId:       GameState.currentRegionId,
       visitedRegions: [...GameState.visitedRegions],
@@ -68,10 +69,12 @@ const SaveSystem = {
       GameState.bossMode        = false;
       GameState.bossRegionId    = null;
 
+      // A árvore é independente das relíquias. Dados v2 sem árvore iniciam no nível 1.
+      SkillTree.load(data.skillTree);
       // Player
       const p = data.player || {};
       const region = Regions[safeRegion];
-      Player.maxHealth    = Math.max(1, Number(p.maxHealth) || 6);
+      Player.maxHealth    = Math.max(6 + SkillTree.bonus('health'), Math.min(20, Number(p.maxHealth) || 6));
       Player.health       = Math.max(1, Math.min(Player.maxHealth, Number(p.health) || Player.maxHealth));
       Player.stamina      = Math.max(0, Math.min(100, Number(p.stamina) || 0));
       Player.x            = Number.isFinite(Number(p.x)) ? Math.max(region.bounds.left, Math.min(region.bounds.right - Player.width, Number(p.x))) : 80;

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#090016">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 64 64%27%3E%3Crect width=%2764%27 height=%2764%27 rx=%2714%27 fill=%27%23080012%27/%3E%3Cpath d=%27M16 14h32v8H25v8h19v8H25v12h-9z%27 fill=%27%23c078ff%27/%3E%3C/svg%3E">
-  <title>Folclorevania v2.5 — Polimento Gráfico</title>
+  <title>Folclorevania v2.6 — Árvore de Habilidades</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -30,7 +30,7 @@
       <h1>FOLCLORE<span>VANIA</span></h1>
       <p class="menu-subtitle">Atravesse terras amaldiçoadas, desperte relíquias antigas e enfrente entidades do folclore brasileiro.</p>
       <div class="title-tags">
-        <span>8 regiões</span><span>7 chefes</span><span>relíquias</span><span>progressão</span>
+        <span>8 regiões</span><span>7 chefes</span><span>relíquias</span><span>árvore ancestral</span>
       </div>
       <div class="menu-note"><span class="portal-dot"></span> Os portais roxos marcam confrontos com entidades.</div>
     </section>
@@ -46,9 +46,9 @@
       </div>
       <div class="controls-mini">
         <span><b>← →</b> mover</span><span><b>Espaço</b> pular</span><span><b>Z</b> atacar</span>
-        <span><b>Shift</b> dash</span><span><b>M</b> mapa</span><span><b>Esc</b> pausa</span>
+        <span><b>Shift</b> dash</span><span><b>M</b> mapa</span><span><b>K</b> talentos</span><span><b>Esc</b> pausa</span>
       </div>
-      <div class="version-badge">v2.5 • gráficos, correções e testes</div>
+      <div class="version-badge">v2.6 • progressão e árvore de habilidades</div>
     </section>
   </div>
 </div>
@@ -116,6 +116,7 @@
     <div class="menu-actions vertical-actions">
       <button class="btn-main" onclick="resumeGame()">Continuar</button>
       <button onclick="quickSavePrompt()">💾 Salvar</button>
+      <button onclick="SkillTree.open()">✦ Árvore de habilidades</button>
       <button onclick="openOptions('pause')">⚙ Opções</button>
       <button onclick="toggleFullscreen()">⛶ Tela cheia</button>
       <button class="btn-danger-soft" onclick="returnToTitle()">Voltar ao menu</button>
@@ -137,6 +138,25 @@
 </div>
 
 <canvas id="gameCanvas" aria-label="Folclorevania"></canvas>
+
+<button id="skillQuickButton" type="button" onclick="SkillTree.open()" aria-label="Abrir árvore de habilidades">✦ Árvore</button>
+<div id="skillScreen" class="skill-screen hidden" role="dialog" aria-modal="true" aria-labelledby="skillTitle">
+  <div class="skill-shell">
+    <header class="skill-header">
+      <div><div class="eyebrow">O PODER DA TERRA DESPERTA</div><h2 id="skillTitle">Árvore Ancestral</h2>
+        <p>Derrote entidades e criaturas, evolua e escolha o seu caminho.</p></div>
+      <button type="button" id="skillClose" class="skill-close" onclick="SkillTree.close()" aria-label="Fechar habilidades">✕ Fechar</button>
+    </header>
+    <div class="skill-progress">
+      <div class="skill-level">NÍVEL <strong id="skillLevel">1</strong></div>
+      <div class="skill-xp-wrap"><div class="skill-xp-head"><span>EXPERIÊNCIA</span><span id="skillXp">0 / 60 experiência</span></div>
+        <div class="skill-xp-track"><div id="skillXpBar"></div></div></div>
+      <div class="skill-points"><strong id="skillPoints">0</strong><span>PONTOS<br>DISPONÍVEIS</span></div>
+    </div>
+    <div id="skillBranches" class="skill-branches" aria-live="polite"></div>
+    <footer class="skill-footer">Cada melhoria custa 1 ponto • Desbloqueie primeiro a habilidade anterior • As escolhas são salvas no seu slot.</footer>
+  </div>
+</div>
 
 <div id="touchControls" class="touch-controls" aria-hidden="true">
   <div class="touch-left">
@@ -163,6 +183,7 @@
 <script src="js/systems/transitionSystem.js"></script>
 <script src="js/systems/campfireSystem.js"></script>
 <script src="js/systems/saveSystem.js"></script>
+<script src="js/systems/skillTree.js"></script>
 <script src="js/entities/player.js"></script>
 <script src="js/entities/enemy.js"></script>
 <script src="js/entities/bossSystem.js"></script>

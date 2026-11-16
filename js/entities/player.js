@@ -291,7 +291,7 @@ const Player = {
     if (this.hitBox) {
       let hitAny = false;
       for (const e of enemies) {
-        if (e.health > 0 && boxHits(this.hitBox, e.hurtBox)) {
+        if (e.health > 0 && !e.invincible && boxHits(this.hitBox, e.hurtBox)) {
           e.takeDamage(this.getDamage(e), this.x + this.width / 2);
           Particles.impact((this.x + e.x) / 2, (this.y + e.y) / 2 + 10, this.facing);
           if (this.state === 'special' && this.health < this.maxHealth)
@@ -302,7 +302,7 @@ const Player = {
       // acerto no boss (Saci, Mula sem Cabeça, Curupira)
       if (typeof BossSystem !== 'undefined' && BossSystem.boss && BossSystem.boss.health > 0) {
         const boss = BossSystem.boss;
-        if (boxHits(this.hitBox, boss.hurtBox)) {
+        if (!boss.invincible && boxHits(this.hitBox, boss.hurtBox)) {
           boss.takeDamage(this.getDamage(boss), this.x + this.width / 2);
           Particles.impact((this.x + boss.x) / 2, (this.y + boss.y) / 2 + 10, this.facing);
           if (this.state === 'special' && this.health < this.maxHealth)

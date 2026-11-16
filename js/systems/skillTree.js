@@ -8,7 +8,7 @@ const SKILL_BRANCHES = [
   ]},
   {id:'guardiao',name:'Guardião',icon:'🌿',subtitle:'Sobreviva às maldições',color:'#83e5ac',skills:[
     {id:'vigor',name:'Coração da Mata',icon:'❤️',max:3,desc:'+1 coração máximo por nível; cura 1 ao aprender.',requires:null},
-    {id:'fôlego',name:'Seiva Vital',icon:'🍃',max:3,desc:'+0,14 de regeneração de energia por nível.',requires:'vigor'},
+    {id:'folego',name:'Seiva Vital',icon:'🍃',max:3,desc:'+0,14 de regeneração de energia por nível.',requires:'vigor'},
     {id:'resiliencia',name:'Casca Ancestral',icon:'🛡️',max:2,desc:'+0,12 s de invulnerabilidade após receber dano.',requires:'folego'},
     {id:'renascer',name:'Benção da Floresta',icon:'🌱',max:1,desc:'Recupere 1 coração a cada 5 inimigos derrotados.',requires:'resiliencia'}
   ]},
@@ -46,7 +46,7 @@ const SkillTree = {
   },
   reset(){
     this.level=1; this.xp=0; this.points=0; this.kills=0;
-    this.ranks={}; this.forceClose();
+    this.ranks={}; this.forceClose(); this.refreshQuick();
   },
   serialize(){
     return {version:1,level:this.level,xp:this.xp,points:this.points,kills:this.kills,ranks:{...this.ranks}};
@@ -64,6 +64,11 @@ const SkillTree = {
     this.xp=Math.max(0,Math.min(this.xpRequired()-1,Math.floor(Number(data.xp)||0)));
     this.points=Math.max(0,Math.min(100,Math.floor(Number(data.points)||0)));
     this.kills=Math.max(0,Math.min(1000000,Math.floor(Number(data.kills)||0)));
+    this.refreshQuick();
+  },
+  refreshQuick(){
+    const btn=document.getElementById('skillQuickButton');
+    if(btn) btn.textContent=this.points?'✦ Árvore • '+this.points:'✦ Árvore';
   },
   gainXP(amount){
     if(!Number.isFinite(amount)||amount<=0) return;
@@ -73,6 +78,7 @@ const SkillTree = {
       this.xp-=this.xpRequired(); this.level++; this.points++; levels++;
     }
     if(this.level>=50) this.xp=0;
+    this.refreshQuick();
     if(levels && typeof showSaveFeedback==='function')
       showSaveFeedback('✨ Nível '+this.level+'! +'+levels+' ponto(s) ancestral(is). Abra com K');
   },
@@ -85,6 +91,7 @@ const SkillTree = {
   onBossDefeated(bossId){
     this.points+=2;
     this.gainXP(80);
+    this.refreshQuick();
     if(typeof showSaveFeedback==='function') showSaveFeedback('✦ '+bossId.toUpperCase()+' derrotado: +2 pontos ancestrais');
   },
   canPurchase(id){
@@ -103,6 +110,7 @@ const SkillTree = {
     if(typeof GameState!=='undefined' && Number.isInteger(GameState._activeSlot) &&
        typeof SaveSystem!=='undefined') SaveSystem.save(GameState._activeSlot);
     this.render();
+    this.refreshQuick();
     return true;
   },
   toggle(){ this.opened?this.close():this.open(); },

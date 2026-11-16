@@ -2,14 +2,25 @@
 // js/entities/enemy.js
 // ============================================================
 
-function createEnemy(x, y, regionId) {
+function createEnemy(x, y, regionId, spawnIndex=0) {
+  // Três famílias com parâmetros e comportamento diferentes. Sempre determinísticas
+  // para que cada descanso e retorno a uma região tenha dificuldade previsível.
+  const kind = ['espreitador','brutamontes','saltador'][spawnIndex % 3];
+  const baseSpeed = 1.2 + regionId * 0.15;
+  const baseHealth = 2 + regionId;
   return {
-    x, y, regionId,
+    x, y, regionId, kind, spawnIndex, homeX:x, patrolDir:spawnIndex%2?1:-1,
     width:34, height:36,
     vx:0, vy:0, gravity:0.55, onGround:false,
-    speed:      1.2 + regionId * 0.15,
-    health:     2   + regionId,
-    maxHealth:  2   + regionId,
+    speed: baseSpeed * (kind==='brutamontes' ? .72 : kind==='saltador' ? 1.3 : 1),
+    health: baseHealth + (kind==='brutamontes' ? 2 : 0),
+    maxHealth: baseHealth + (kind==='brutamontes' ? 2 : 0),
+    attackDamage: kind==='brutamontes' && regionId >= 3 ? 2 : 1,
+    aggroRange: kind==='saltador' ? 320 : 240,
+    attackRange: kind==='brutamontes' ? 66 : 52,
+    windupDuration: kind==='brutamontes' ? .33 : kind==='saltador' ? .14 : .20,
+    recoveryDuration: kind==='brutamontes' ? 1.8 : kind==='saltador' ? 1.1 : 1.45,
+    leapCooldown:0,
     attackTimer:0, invincible:false, invincibleTimer:0, knockbackTimer:0,
     _pt:0, aiState:'patrol', aiCooldown:0, windupTimer:0, _attackDir:1,
     hitBox:null, _hitSpec:null,
@@ -30,38 +41,48 @@ function createEnemy(x, y, regionId) {
       if (typeof triggerScreenShake === 'function') triggerScreenShake(2.2, 0.08);
       if (this.health <= 0) {
         Particles.death(this.x+this.width/2, this.y+this.height/2, '#44ff44');
-        SkillTree.onEnemyDefeated(this.regionId);
+        SkillTree.onEnemyDefeated(this.regionId, this.kind);
       }
     },
 
     updateAI(dt, player) {
-      if (this.knockbackTimer > 0) return;
-      const dist = Math.abs(this.x - player.x);
+      if(this.aiCooldown>0) this.aiCooldown=Math.max(0,this.aiCooldown-dt);
+      if(this.leapCooldown>0) this.leapCooldown=Math.max(0,this.leapCooldown-dt);
+      if(this.knockbackTimer>0) return;
+      const dist=Math.abs((this.x+this.width/2)-(player.x+player.width/2));
+      const verticalDist=Math.abs(this.y-player.y);
       switch(this.aiState) {
         case 'patrol':
-          this._pt += dt;
-          this.vx = Math.sin(this._pt*1.1)*this.speed;
-          if (dist < 220) this.aiState='chase';
+          // Patrulha com limites fixos, evitando oscilação no mesmo ponto.
+          if(Math.abs(this.x-this.homeX)>75)
+            this.patrolDir=this.x>this.homeX?-1:1;
+          this.vx=this.patrolDir*this.speed*.55;
+          if(dist<this.aggroRange&&verticalDist<120) this.aiState='chase';
           break;
         case 'chase':
-          this.vx = this.x < player.x ? this.speed : -this.speed;
-          if (dist < 52 && this.aiCooldown <= 0) {
-            this.aiState='windup'; this.windupTimer=0.16; this.vx=0;
-            this._attackDir = this.x < player.x ? 1 : -1;
+          this.vx=this.x<player.x?this.speed:-this.speed;
+          if(this.kind==='saltador' && this.onGround && this.leapCooldown<=0 &&
+             dist>85 && dist<210 && verticalDist<110) {
+            this.vy=-8.5; this.leapCooldown=2.3;
           }
-          if (dist > 350) this.aiState='patrol';
+          if(dist<this.attackRange && verticalDist<65 && this.aiCooldown<=0) {
+            this.aiState='windup'; this.windupTimer=this.windupDuration; this.vx=0;
+            this._attackDir=this.x<player.x?1:-1;
+          }
+          if(dist>this.aggroRange+140||verticalDist>180) this.aiState='patrol';
           break;
         case 'windup':
-          this.vx = 0;
-          this.windupTimer -= dt;
-          if (this.windupTimer <= 0) {
-            const ox = this._attackDir > 0 ? this.width-4 : -36;
-            this.setHit(ox,4,38,28);
-            this.attackTimer=0.20; this.aiCooldown=1.45; this.aiState='chase';
+          this.vx=0;
+          this.windupTimer-=dt;
+          if(this.windupTimer<=0) {
+            const reach=this.kind==='brutamontes'?46:38;
+            const ox=this._attackDir>0?this.width-4:-reach+4;
+            this.setHit(ox,4,reach,28);
+            this.attackTimer=this.kind==='brutamontes'?.28:.20;
+            this.aiCooldown=this.recoveryDuration; this.aiState='chase';
           }
           break;
       }
-      if (this.aiCooldown>0) this.aiCooldown-=dt;
     },
 
     update(dt, region, player) {
@@ -74,7 +95,7 @@ function createEnemy(x, y, regionId) {
       if (this.knockbackTimer>0){ this.knockbackTimer-=dt; if(this.knockbackTimer<=0) this.knockbackTimer=0; }
       if (this.invincibleTimer>0){ this.invincibleTimer-=dt; if(this.invincibleTimer<=0) this.invincible=false; }
       if (this.hitBox && !player.invincible && boxHits(this.hitBox, player.hurtBox))
-        player.takeDamage(1, this.x+this.width/2);
+        player.takeDamage(this.attackDamage, this.x+this.width/2);
     },
 
     draw(ctx) {
@@ -91,7 +112,7 @@ function createEnemy(x, y, regionId) {
       const bob=Math.sin((typeof MapSystem!=='undefined'?MapSystem._time:0)*5+this.x*.01)*1.3;
       ctx.save();if(this.invincible)ctx.globalAlpha=(Math.floor(Date.now()/60)%2===0)?.35:1;
       // inimigos ficam mais legíveis sem aumentar a hitbox
-      const visualScale=1.16;ctx.translate(sx+w/2,sy+h);ctx.scale(visualScale,visualScale);ctx.translate(-(sx+w/2),-(sy+h));
+      const visualScale=this.kind==='brutamontes'?1.28:1.16;ctx.translate(sx+w/2,sy+h);ctx.scale(visualScale,visualScale);ctx.translate(-(sx+w/2),-(sy+h));
       ctx.fillStyle='rgba(0,0,0,.32)';ctx.beginPath();ctx.ellipse(sx+w/2,sy+h+3,w*.50,4.5,0,0,Math.PI*2);ctx.fill();
       if(chase){ctx.globalAlpha=.11;ctx.fillStyle=glow;ctx.beginPath();ctx.ellipse(sx+w/2,sy+h*.55,w*.75,h*.7,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;}
       const g=ctx.createRadialGradient(sx+w*.45,sy+h*.35,2,sx+w*.5,sy+h*.55,w*.75);g.addColorStop(0,kb?'#fff':atk?glow:base);g.addColorStop(1,dark);ctx.fillStyle=g;
@@ -107,6 +128,18 @@ function createEnemy(x, y, regionId) {
       else if(this.regionId===6){ctx.lineWidth=2;ctx.beginPath();ctx.arc(sx+w/2,sy+6,8,Math.PI,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(sx+7,sy+13);ctx.lineTo(sx+2,sy+3);ctx.moveTo(sx+w-7,sy+13);ctx.lineTo(sx+w-2,sy+3);ctx.stroke();}
       else if(this.regionId===7){ctx.lineWidth=1.7;ctx.beginPath();ctx.moveTo(sx+5,sy+7);ctx.lineTo(sx+w/2,sy-7);ctx.lineTo(sx+w-5,sy+7);ctx.stroke();ctx.beginPath();ctx.arc(sx+w/2,sy+h*.58,7,0,Math.PI*2);ctx.stroke();}
       ctx.shadowBlur=0;ctx.globalAlpha=1;
+      // Silhuetas marcadamente distintas sem criar texturas adicionais.
+      if(this.kind==='brutamontes'){
+        ctx.strokeStyle='#ffbd78';ctx.lineWidth=3;ctx.beginPath();
+        ctx.moveTo(sx-3,sy+17);ctx.lineTo(sx+6,sy+2);ctx.lineTo(sx+13,sy+12);
+        ctx.moveTo(sx+w+3,sy+17);ctx.lineTo(sx+w-6,sy+2);ctx.lineTo(sx+w-13,sy+12);
+        ctx.stroke();
+        ctx.fillStyle='#ce7344';ctx.fillRect(sx+8,sy+h*.58,w-16,5);
+      } else if(this.kind==='saltador'){
+        ctx.fillStyle='#e9dbff';ctx.beginPath();
+        ctx.moveTo(sx+5,sy+8);ctx.lineTo(sx+11,sy-10);ctx.lineTo(sx+17,sy+7);
+        ctx.moveTo(sx+17,sy+7);ctx.lineTo(sx+24,sy-13);ctx.lineTo(sx+29,sy+8);ctx.fill();
+      }
       if(windup){ctx.strokeStyle='#fff1be';ctx.globalAlpha=.45+.25*Math.sin((typeof MapSystem!=='undefined'?MapSystem._time:0)*18);ctx.lineWidth=2;ctx.beginPath();ctx.arc(sx+w/2,sy+h/2,w*.68,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1;}
       // olhos
       const eye=kb?'#fff':(atk||windup)?'#fff1be':glow;ctx.fillStyle=eye;ctx.shadowColor=eye;ctx.shadowBlur=chase?9:5;ctx.beginPath();ctx.arc(sx+w*.31,sy+h*.38+bob,2.7,0,Math.PI*2);ctx.arc(sx+w*.69,sy+h*.38+bob,2.7,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
@@ -118,5 +151,5 @@ function createEnemy(x, y, regionId) {
 }
 
 function spawnEnemies(region) {
-  region.enemies = region.enemyDefs.map(def => createEnemy(def.x, def.y, region.id));
+  region.enemies = region.enemyDefs.map((def,i) => createEnemy(def.x, def.y, region.id, i));
 }

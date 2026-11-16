@@ -34,12 +34,14 @@ function createEnemy(x, y, regionId, spawnIndex=0) {
     takeDamage(n, srcX) {
       if (this.invincible || this.health <= 0) return;
       this.health -= n;
+      if(typeof EntityArt!=='undefined') EntityArt.enemyHit(this);
       this.invincible=true; this.invincibleTimer=0.35;
       const dir = (srcX !== undefined && srcX < this.x) ? 1 : -1;
       this.vx=dir*4.5; this.vy=-2.5; this.knockbackTimer=0.14;
       Particles.impact(this.x+this.width/2, this.y+this.height/2, dir);
       if (typeof triggerScreenShake === 'function') triggerScreenShake(2.2, 0.08);
       if (this.health <= 0) {
+        if(typeof EntityArt!=='undefined') EntityArt.enemyDeath(this);
         Particles.death(this.x+this.width/2, this.y+this.height/2, '#44ff44');
         SkillTree.onEnemyDefeated(this.regionId, this.kind);
       }
@@ -88,6 +90,7 @@ function createEnemy(x, y, regionId, spawnIndex=0) {
     update(dt, region, player) {
       if (this.health <= 0) return;
       this._animTime+=dt;
+      this._artHitFlash=Math.max(0,(this._artHitFlash||0)-dt);
       this.updateAI(dt, player);
       resolvePhysics(this, region);
       this.updateHurtBox();
@@ -101,6 +104,7 @@ function createEnemy(x, y, regionId, spawnIndex=0) {
 
     draw(ctx) {
       if(this.health<=0)return;
+      if(typeof EntityArt!=='undefined'){ EntityArt.drawEnemy(ctx,this); return; }
       const sx=this.x-Camera.x,sy=this.y,w=this.width,h=this.height;
       if(sx < -80 || sx > ctx.canvas.width + 80) return;
       const windup=this.aiState==='windup',atk=this.attackTimer>0,chase=this.aiState==='chase'||atk||windup,kb=this.knockbackTimer>0;

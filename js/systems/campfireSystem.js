@@ -12,6 +12,8 @@ const CAMPFIRE_DEFS = [
   { regionId:3, x: 200, y: 808 },  // Raízes Enganadoras
   { regionId:4, x: 200, y: 808 },  // Mata Viva
   { regionId:5, x: 200, y: 808 },  // Templo Ancestral
+  { regionId:6, x: 200, y: 808 },  // Pântano do Boitatá
+  { regionId:7, x: 200, y: 808 },  // Covil da Cuca
 ];
 
 const CAMPFIRE_WIDTH  = 28;

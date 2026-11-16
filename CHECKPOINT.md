@@ -1,3 +1,34 @@
+# Folclorevania — checkpoint de desenvolvimento
+
+## v2.8 — Evolução dos chefes e animações (2026-11-16)
+
+**Foco da versão:** padrões de ataque dos chefes, informação visual antes do dano e custo de efeitos desenhados.
+
+### Código implementado
+- Saci: corrigida IA da fase 1, na qual a investida impedia a rajada de vento. Agora alterna investida e rajada, com estados próprios de preparação (0,44s e 0,48s) e indicadores direcionais antes da colisão.
+- Saci: ao avançar para fase 2, não carrega hitbox ou estado de investida pendente.
+- Mula sem Cabeça: salto recebe apenas um impulso vertical, em vez de reaplicá-lo em vários quadros.
+- Mula: investida entra em estado de preparação visual (0,56s fase 1 / 0,38s fase 2), permitindo reação do jogador. A hitbox ativa somente quando a carga começa.
+- Mula: partículas de chama emitidas por intervalo de tempo (0,09s / 0,05s) e não por frame, reduzindo efeitos e diminuindo dependência do FPS; partículas antigas ainda expiram normalmente.
+- Base dos 7 chefes: dano inválido não é aplicado e HP é limitado a zero; golpe letal não ativa a fase 2. Ao mudar de fase, exibe aviso curto de **FASE II — FÚRIA DESPERTA**; a barra de vida é reiniciada no início de cada luta.
+- Inimigos comuns: ciclos de caminhada independentes por instância, postura aérea do saltador e indicador de intenção de ataque com progresso baseado no tempo restante. Tudo desenhado no canvas, sem assets adicionais.
+
+### Arquivos alterados
+`js/entities/bossSystem.js`, `js/entities/enemy.js`, `js/ui/bossHUD.js`, `index.html`, `CHECKPOINT.md`, `TEST-REPORT-v2.8.md`, `README-v2.8.md`.
+
+### Testes efetivos
+- Sintaxe dos módulos alterados de chefe, inimigo e HUD: PASS.
+- 17 asserções executadas sobre criação dos 7 chefes, Saci (ambas as armas, sem hitbox durante aviso), Mula (sequência de saltos, aviso de carga, limites de chamas), troca de fase e dano letal.
+- 7 simulações de 8 segundos, uma por chefe, atravessando primeira e segunda fase: PASS com substitutos para DOM, física e partículas. Os testes são simulações do JS real, **não** partidas completas em navegador.
+- Testes manuais em desktop e smartphone, balanceamento real de dificuldade e FPS permanecem pendentes.
+
+### Próximas prioridades
+1. Jogar os 7 chefes no navegador, observar tempo de reação e ajustar padrões/tempo de aviso.
+2. Medir FPS em Android e otimizar transparências, sombras e partículas.
+3. Adicionar mais variedade de ataques aos chefes 3–7, mantendo os poderes e o enredo.
+4. Melhorar esquiva e resposta visual de acertos/críticos.
+
+---
 ## v2.7 — Variedade de inimigos, combate e usabilidade (2026-11-16)
 
 **Escopo concluído em código**

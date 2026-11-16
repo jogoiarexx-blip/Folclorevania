@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="pt-BR"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0913"><title>Galeria do Herói e Inimigos — Folclorevania v3.0</title>
+<style>
+:root{color-scheme:dark;--line:#56476b;--txt:#f4ebff;--muted:#bfb1cb}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#28203a,#0a0912 64%);color:var(--txt);font:14px/1.5 system-ui,sans-serif}
+main{max-width:1180px;margin:auto;padding:24px 16px 40px}header{text-align:center;margin-bottom:18px}
+h1{font-size:clamp(23px,4vw,35px);margin:7px 0}header p{color:var(--muted);max-width:680px;margin:0 auto 14px}
+a{color:#e1b5ff}.board{border:1px solid var(--line);background:#0b0b13;border-radius:18px;overflow:hidden;box-shadow:0 18px 65px #0008}
+canvas{display:block;width:100%;aspect-ratio:16/9}section{padding:18px;background:#171323}
+.row{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;margin:9px 0}
+label{font-weight:650}select,button{font:600 13px system-ui;border:1px solid #745d89;border-radius:10px;background:#30243f;color:var(--txt);min-height:42px;padding:9px 12px;cursor:pointer}
+button[aria-pressed=true]{background:#7b4a9d;border-color:#dcaaff}
+.note{margin:14px 0 0;text-align:center;color:var(--muted);font-size:12px}
+@media(max-width:620px){section{padding:11px}.row{gap:6px}select,button{font-size:12px;padding:8px 9px}}
+</style></head><body>
+<main><header><a href="./">← Voltar ao jogo</a><h1>Galeria: Herói e Inimigos</h1>
+<p>Modelos 2D redesenhados na versão 3.0. Veja as animações no próprio motor Canvas, alterne ações, criaturas e biomas.</p></header>
+<div class="board"><canvas id="preview" width="1600" height="900" aria-label="Cena animada do herói e inimigo"></canvas>
+<section><div class="row" id="actions">
+<button type="button" data-action="idle" aria-pressed="true">Parado</button>
+<button type="button" data-action="run" aria-pressed="false">Correr</button>
+<button type="button" data-action="jump" aria-pressed="false">Pular</button>
+<button type="button" data-action="attack" aria-pressed="false">Atacar</button>
+<button type="button" data-action="dash" aria-pressed="false">Dash</button>
+<button type="button" data-action="charge" aria-pressed="false">Investida</button>
+<button type="button" data-action="special" aria-pressed="false">Especial</button></div>
+<div class="row">
+<label for="enemy">Inimigo</label><select id="enemy">
+<option value="espreitador">Espreitador</option><option value="brutamontes">Brutamontes</option><option value="saltador">Saltador</option></select>
+<label for="biome">Bioma</label><select id="biome">
+<option value="0">Vila</option><option value="1">Floresta</option><option value="2">Ruínas</option>
+<option value="3">Bosque</option><option value="4">Vale</option><option value="5">Profundezas</option>
+<option value="6">Pântano</option><option value="7">Covil</option></select>
+<label for="quality">Qualidade</label><select id="quality">
+<option value="high">Alta</option><option value="medium">Média</option><option value="low">Baixa</option></select>
+<button id="toggle" type="button" aria-pressed="false">Pausar</button>
+</div><p class="note">Visualização gráfica de demonstração — não altera o seu save nem representa uma luta jogável.</p></section>
+</div></main>
+<script>
+const Camera={x:0};
+const GameSettings={quality:'high'};
+</script>
+<script src="js/entities/entityArt.js?v=3.0"></script>
+<script>
+'use strict';
+const canvas=document.getElementById('preview'),ctx=canvas.getContext('2d');
+const hero={x:380,y:685,width:30,height:46,health:6,maxHealth:6,
+  state:'idle',facing:1,onGround:true,attackTimer:0,stamina:100,
+  invincible:false,vx:0,vy:0,specialTimer:0};
+const monster={x:1070,y:690,width:34,height:36,health:5,maxHealth:5,
+  speed:1.4,vx:1.1,kind:'espreitador',regionId:0,
+  onGround:true,aiState:'chase',_attackDir:-1,attackTimer:0,
+  windupDuration:.32,windupTimer:.32,_animTime:0};
+let paused=false,last=0,active='idle';
+function setAction(st){
+ active=st;hero.state=st;hero.onGround=st!=='jump';hero.vx=st==='run'?3.2:st==='dash'?7.5:0;
+ hero.attackTimer=st==='attack'?.25:0;hero.specialTimer=st==='special'?.4:0;
+ for(const b of document.querySelectorAll('[data-action]'))b.setAttribute('aria-pressed',String(b.dataset.action===st));
+}
+document.querySelectorAll('[data-action]').forEach(b=>b.addEventListener('click',()=>setAction(b.dataset.action)));
+document.getElementById('enemy').addEventListener('change',e=>{monster.kind=e.target.value;monster._animTime=0});
+document.getElementById('biome').addEventListener('change',e=>{monster.regionId=Number(e.target.value)});
+document.getElementById('quality').addEventListener('change',e=>{GameSettings.quality=e.target.value});
+document.getElementById('toggle').addEventListener('click',e=>{
+ paused=!paused;e.target.textContent=paused?'Retomar':'Pausar';e.target.setAttribute('aria-pressed',String(paused));
+});
+function drawStage(){
+ const sky=ctx.createLinearGradient(0,0,0,900);sky.addColorStop(0,'#171527');sky.addColorStop(.7,'#242036');sky.addColorStop(1,'#120f20');
+ ctx.fillStyle=sky;ctx.fillRect(0,0,1600,900);
+ ctx.fillStyle='#38304b';ctx.beginPath();ctx.arc(1220,175,84,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle='#141323';ctx.beginPath();ctx.moveTo(0,760);
+ for(let x=0;x<=1600;x+=100)ctx.lineTo(x,650+Math.sin(x*.013)*85);ctx.lineTo(1600,900);ctx.lineTo(0,900);ctx.fill();
+ ctx.fillStyle='#2b2337';ctx.fillRect(0,730,1600,170);
+ ctx.fillStyle='#6b4f65';ctx.fillRect(0,730,1600,8);
+ for(let x=0;x<1600;x+=110){ctx.fillStyle='rgba(22,15,32,.6)';ctx.fillRect(x+14,765,92,7)}
+}
+function frame(ts){
+ const dt=Math.min(.04,Math.max(0,(ts-last)/1000||0));last=ts;
+ if(!paused){
+  EntityArt.update(dt);EntityArt.updatePlayer(dt,hero);
+  monster._animTime+=dt;
+  if(active==='attack')hero.attackTimer=Math.max(.05,.25-(EntityArt.heroTime% .25));
+ }
+ ctx.save();drawStage();
+ // A lupa conserva a proporção vertical do sprite e amplia apenas o centro da cena.
+ ctx.save();ctx.translate(390,430);ctx.scale(2.25,2.25);ctx.translate(-395,-720);
+ EntityArt.drawPlayer(ctx,hero);ctx.restore();
+ ctx.save();ctx.translate(1110,430);ctx.scale(2.25,2.25);ctx.translate(-1087,-725);
+ EntityArt.drawEnemy(ctx,monster);ctx.restore();
+ ctx.font='bold 22px system-ui';ctx.fillStyle='#e8cef9';ctx.textAlign='center';
+ ctx.fillText('HERÓI',390,700);ctx.fillText(monster.kind.toUpperCase(),1105,700);
+ ctx.restore();
+ requestAnimationFrame(frame);
+}
+setAction('idle');requestAnimationFrame(frame);
+</script></body></html>

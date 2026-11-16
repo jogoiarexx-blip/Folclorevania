@@ -47,6 +47,15 @@ const HUD = {
     const sg=ctx.createLinearGradient(sx,sy,sx+sw,sy);sg.addColorStop(0,'#167f9d');sg.addColorStop(1,'#4ce1ff');ctx.fillStyle=sg;ctx.beginPath();ctx.roundRect(sx,sy,sw*pct,sh,4);ctx.fill();
     ctx.fillStyle='#6f8d96';ctx.font='8px monospace';ctx.fillText('ENERGIA',sx,sy+17);
 
+    // Progressão ancestral: informações do nível sempre visíveis durante a exploração.
+    this._panel(ctx,18,105,300,30,8,.68);
+    ctx.font='bold 10px monospace';ctx.fillStyle='#dcb7ff';
+    ctx.fillText('NV '+SkillTree.level,30,124);
+    ctx.fillStyle='#20132d';ctx.fillRect(76,117,126,6);
+    ctx.fillStyle='#ba76ea';ctx.fillRect(76,117,126*(SkillTree.xp/SkillTree.xpRequired()),6);
+    ctx.font='9px monospace';ctx.fillStyle=SkillTree.points?'#ffe0a0':'#877694';
+    ctx.fillText('✦ '+SkillTree.points+' PONTOS  [K]',214,124);
+
     // região + objetivo no topo central
     const titleW=Math.min(520,Math.max(330,ctx.measureText(regionName).width+190));
     this._panel(ctx,W/2-titleW/2,16,titleW,63,11,.68);

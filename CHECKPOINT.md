@@ -1,5 +1,39 @@
 # Folclorevania — checkpoint de desenvolvimento
 
+## v2.9 — Reconstrução gráfica procedural dos 7 chefes (2026-11-16)
+
+**Objetivo:** evoluir de fato os gráficos de todos os bosses, preservando IA, colisões, poderes desbloqueados, salvamentos e desempenho em dispositivos móveis.
+
+### Implementado em código
+- Novo subsistema `js/entities/bossVisuals.js`, com desenho Canvas em camadas de fundo e primeiro plano; integra-se no `BossSystem.draw`. Sem imagens externas ou dependências.
+- **Saci:** redemoinhos com várias elipses animadas, faixa rúnica no chapéu, lenço flutuante e partículas orbitais.
+- **Mula sem Cabeça:** juba/pescoço em chamas, rachaduras de magma, cascos incandescentes e aura de calor.
+- **Curupira:** mechas de cabelo flamejante animadas, pés voltados para trás mais reconhecíveis, talismãs e folhas ao redor.
+- **Caipora:** cocar com novas camadas, pinturas faciais, pulseiras espirituais e símbolos verdes orbitais.
+- **Entidade Ancestral:** manto energético, anéis etéreos, máscara com inscrições e runas flutuantes.
+- **Boitatá:** cabeça/mandíbula detalhadas, olhos, escamas e cristas ardentes ao longo do corpo.
+- **Cuca:** focinho de jacaré, presas, escamas, coroa de espinhos e símbolos mágicos rosados.
+- Brilho temporário para impacto de golpes e onda radial de transição para fase II, usando `visualHitTimer` e `visualPhasePulse` definidos na base comum dos chefes.
+- Animação baseada em `dt` do jogo: os efeitos congelam na pausa/loading. Modos de qualidade `low`, `medium`, `high` controlam principalmente sombras e quantidade de glifos. Decoração fora da área visível é descartada.
+- Adicionada `boss-gallery.html`, galeria opcional para testar os sete bosses, ambas as fases e níveis de qualidade com zoom independente.
+- Scripts gráficos receberam versionamento de URL `?v=2.9` para reduzir chances de cache antigo em atualizações do GitHub Pages.
+
+### Arquivos
+`js/entities/bossVisuals.js` (novo), `js/entities/bossSystem.js`, `index.html`, `boss-gallery.html` (novo), `tests/bossVisualsSmoke.test.js` (novo), `README-v2.9.md`, `TEST-REPORT-v2.9.md`, `CHECKPOINT.md`.
+
+### Verificações
+- Teste smoke usando o código da nova branch em V8: **42 cenários** (7 chefes × 3 qualidades × 2 fases), incluindo ambas as camadas e o desenhista original; passou.
+- Harness automatizado reutilizável adicionado: `node tests/bossVisualsSmoke.test.js` (somente Node nativo, sem dependências).
+- JavaScript da galeria passou por verificação sintática.
+- Limitação: o teste realizado é de lógica/desenho com mock de Canvas, **não comprova fidelidade visual em navegador real, FPS em smartphone ou ausência de todos os bugs**.
+
+### Próximas prioridades
+1. Validar visualmente cada chefe e ajustar cores/proporções/posicionamentos com screenshots reais.
+2. Aferir FPS no Android/iOS, principalmente em fase II.
+3. Aplicar efeitos de acerto e derrota exclusivos por chefe dentro de um orçamento fixo de partículas.
+4. Refinar animações procedurais dos ataques reais (não apenas poses do modelo).
+
+---
 ## v2.8 — Evolução dos chefes e animações (2026-11-16)
 
 **Foco da versão:** padrões de ataque dos chefes, informação visual antes do dano e custo de efeitos desenhados.

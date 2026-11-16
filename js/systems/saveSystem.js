@@ -239,7 +239,7 @@ const SaveScreen = {
 
   _render() {
     const screen  = document.getElementById('saveScreen');
-    const title   = this.mode === 'save' ? '💾 Salvar Jogo' : '📂 Carregar Jogo';
+    const title   = this.mode === 'save' ? '💚 Descansar e Salvar' : '📂 Carregar Jogo';
     const isNew   = this.mode === 'load';
 
     let html = `<h2 style="margin-bottom:18px;letter-spacing:2px;color:#cc99ff;text-shadow:0 0 12px #9944ff">${title}</h2>`;

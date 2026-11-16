@@ -11,6 +11,9 @@
 - **Galeria `entity-gallery.html`:** selecione ações do herói, tipo de inimigo, oito biomas e qualidades gráficas. Mostra os novos desenhos sem entrar em uma luta.
 - Mantidos todos os 7 chefes e sua camada gráfica 2.9; mantidos todos os 3 slots, dados salvos, 8 mapas, 12 talentos e IA da v2.8.
 
+
+**Verificação final complementar:** sintaxe dos 23 arquivos JavaScript do repositório (incluindo os testes) passou; 6 integrações de runtime Player/Enemy/EntityArt foram aprovadas; os 21 scripts do index e o script externo da galeria existem na branch; os 2 trechos JS inline da galeria têm sintaxe válida.
+
 ### Arquivos de código
 `js/entities/entityArt.js` (novo); `js/entities/player.js`; `js/entities/enemy.js`; `js/main.js`; `js/systems/saveSystem.js`; `index.html`; `entity-gallery.html` (novo); `tests/entityArtSmoke.test.js`; `CHECKPOINT.md`, `README-v3.0.md`, `TEST-REPORT-v3.0.md`.
 

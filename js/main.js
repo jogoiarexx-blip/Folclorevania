@@ -205,6 +205,7 @@ function _freshStart() {
   Camera.x = 0;
   Input.clear();
   CampfireSystem.reset();
+  if(typeof EntityArt!=='undefined') EntityArt.reset();
   for (const r of Regions) r.enemies = [];
   spawnEnemies(Regions[0]);
 }
@@ -539,6 +540,7 @@ function update(dt) {
 
   const region = getCurrentRegionForPhysics();
   Player.update(dt, region, GameState.bossMode ? [] : Regions[GameState.currentRegionId].enemies);
+  if(typeof EntityArt!=='undefined') EntityArt.update(dt);
 
   // Arenas com abismos: cair abaixo do limite agora conta como morte.
   if (Player.y > region.bounds.bottom + 120) {
@@ -640,7 +642,10 @@ function render() {
 
   Particles.draw(ctx);
   if (GameState.bossMode) BossSystem.draw(ctx);
-  else for (const e of Regions[rid].enemies) e.draw(ctx);
+  else {
+    if(typeof EntityArt!=='undefined') EntityArt.drawEchoes(ctx,rid);
+    for (const e of Regions[rid].enemies) e.draw(ctx);
+  }
   Player.draw(ctx);
   if (GameSettings.ambientFx) MapSystem.drawForeground(ctx, pal, rid);
   MapSystem.drawFog(ctx, pal);

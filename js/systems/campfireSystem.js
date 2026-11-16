@@ -68,11 +68,9 @@ const CampfireSystem = {
 
     if (dist < INTERACT_RANGE) {
       this._prompt = { cf };
-      // Pressiona E → salva
-      if (Input.jp('KeyE')) {
-        cf.lit = true;
-        return 'save'; // sinaliza ao main.js
-      }
+      // Pressiona E → solicita descanso. O main.js confirma o save
+      // antes de marcar a fogueira como acesa.
+      if (Input.jp('KeyE')) return 'save';
     }
   },
 
@@ -214,7 +212,7 @@ const CampfireSystem = {
       ctx.fillStyle = lit ? '#ffcc66' : '#aaaaaa';
       ctx.shadowColor = lit ? '#ff8800' : '#555';
       ctx.shadowBlur  = 8;
-      const label = lit ? '[ E ]  Salvar' : '[ E ]  Acender e Salvar';
+      const label = lit ? '[ E ] Descansar / Salvar' : '[ E ] Acender / Descansar';
       const lw = ctx.measureText(label).width;
       ctx.fillText(label, sx + CAMPFIRE_WIDTH/2 - lw/2, sy - 6);
       ctx.shadowBlur  = 0;

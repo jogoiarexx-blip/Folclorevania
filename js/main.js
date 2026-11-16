@@ -186,6 +186,7 @@ function _freshStart() {
   GameState.doorHint = ''; GameState.doorHintTimer = 0; GameState.damageFlash = 0;
   if (typeof BossSystem !== 'undefined') { BossSystem.active=false; BossSystem.boss=null; BossSystem.introActive=false; BossSystem.defeatActive=false; }
 
+  SkillTree.reset();
   Player.health    = Player.maxHealth = 6;
   Player.stamina   = 100;
   Player.x = 80; Player.y = 760;
@@ -198,6 +199,8 @@ function _freshStart() {
   Player.abilities = { dash:true, doubleJump:false, charge:false, special:false, _confused:false };
   Player.hitBox = null; Player._hitSpec = null;
   Player.coyoteTimer = 0; Player.jumpBufferTimer = 0;
+  Player.dashTimer = 0; Player.attackTimer = 0; Player.chargeTimer = 0;
+  Player.specialTimer = 0; Player.specialCooldown = 0; Player.knockbackTimer = 0;
   Player.updateHurtBox();
   Camera.x = 0;
   Input.clear();
@@ -265,6 +268,7 @@ function returnToTitle() {
   document.body.classList.remove('game-paused');
   document.body.classList.add('game-menu');
   RegionStream.reset();
+  SkillTree.forceClose();
 }
 
 function showEnding() {
@@ -286,6 +290,14 @@ function continueAfterEnding() {
 }
 
 window.addEventListener('keydown', e => {
+  if (e.code === 'Escape' && SkillTree.opened) {
+    e.preventDefault(); SkillTree.close(); return;
+  }
+  if (e.code === 'KeyK' && GameState.started) {
+    e.preventDefault();
+    if (!e.repeat) SkillTree.toggle();
+    return;
+  }
   if (e.repeat && ['KeyM','KeyH','Escape','KeyP','KeyF'].includes(e.code)) return;
 
   if (e.code === 'Escape' && !document.getElementById('optionsScreen').classList.contains('hidden')) {
@@ -362,7 +374,10 @@ const BOSS_SPAWN_AFTER = {
 function onBossDefeated(bossId) {
   GameState.bossMode = false;
   GameState.currentRegionId = GameState.bossRegionId;
-  GameState.defeatedBosses.add(bossId);
+  if (!GameState.defeatedBosses.has(bossId)) {
+    GameState.defeatedBosses.add(bossId);
+    SkillTree.onBossDefeated(bossId);
+  }
   const ability = BOSS_UNLOCKS[bossId];
   if (ability) Player.unlockAbility(ability);
   const spawn = BOSS_SPAWN_AFTER[bossId] || { x:100, y:300 };

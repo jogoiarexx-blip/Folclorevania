@@ -70,12 +70,16 @@ const SaveSystem = {
 
     const previous = {
       health: Player.health, stamina: Player.stamina,
+      invincible: Player.invincible, invincibleTimer: Player.invincibleTimer,
       enemies: region.enemies, fireLit: fire ? fire.lit : false,
     };
 
     try {
       Player.health = Player.maxHealth;
       Player.stamina = 100;
+      // Curta proteção ao reaparecerem inimigos próximos da fogueira.
+      Player.invincible = true;
+      Player.invincibleTimer = Math.max(Player.invincibleTimer || 0, 1.0);
       // spawnEnemies substitui a lista inteira: sem duplicar inimigos antigos.
       spawnEnemies(region);
       if (fire) fire.lit = true;
@@ -86,6 +90,8 @@ const SaveSystem = {
 
     Player.health = previous.health;
     Player.stamina = previous.stamina;
+    Player.invincible = previous.invincible;
+    Player.invincibleTimer = previous.invincibleTimer;
     region.enemies = previous.enemies;
     if (fire) fire.lit = previous.fireLit;
     return false;

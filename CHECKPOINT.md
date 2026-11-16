@@ -1,5 +1,16 @@
 # Folclorevania — checkpoint de desenvolvimento
 
+## v2.6.1 — Correção de descanso e reaparecimento de inimigos (2026-11-16)
+- Corrigido o save em fogueiras: **ao interagir com E**, o jogador restaura todos os corações e toda a energia antes de salvar.
+- Corrigido o salvamento manual (F5 / pausa): agora também descansa, recupera vida/energia e recria os inimigos da região.
+- O spawn da região corrente é substituído de uma vez, evitando cópias e preservando o progresso dos chefes e talentos.
+- Fogueiras só são marcadas como acesas após conclusão positiva da gravação; em falha o estado de HP/energia/inimigos volta ao anterior.
+- Proteção contra descansar durante morte, boss fight e transição.
+- Testes de sintaxe e de integração em V8 executados para os fluxos acima; **navegador/jogabilidade mobile ainda requerem teste real**.
+- Arquivos: `js/systems/saveSystem.js`, `js/main.js`, `js/systems/campfireSystem.js`, `index.html`, `CHECKPOINT.md` e `TEST-REPORT-v2.6.1.md`.
+
+---
+
 **Build de trabalho:** v2.6 — Árvore Ancestral  
 **Base:** v2.5 (8 regiões e 7 chefes)  
 **Data:** 2026-11-16
